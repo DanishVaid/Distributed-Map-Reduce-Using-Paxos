@@ -12,7 +12,7 @@ class site(object):
         self.localBalance = 10
         self.addrDict = {}                # 'siteID: IP ADDR' & 'IP ADDR' : 'PORT'
 
-        self.recSock = None
+        # self.recSock = None
         self.outgoingChannels = [None]     # Start with None in it so the siteID's line up
         self.incomingChannels = [None]     # Start with None in it so the siteID's line up
         self.queueList = [None]           # Start with None in it so the siteID's line up
@@ -33,10 +33,9 @@ class site(object):
             self.incomingChannels.append(None)
             self.queueList.append(queue.Queue())
         
-        self.recSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.recSock.bind((self.addrDict[self.siteID], int(self.addrDict[self.addrDict[self.siteID]])))
-        self.recSock.setblocking(0)
-        self.recSock.listen(1)
+        recSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        recSock.bind((self.addrDict[self.siteID], int(self.addrDict[self.addrDict[self.siteID]])))
+        recSock.listen(1)
         
         for line in setupFile.readlines():
             sendID, recID = line.strip().split()
@@ -50,7 +49,7 @@ class site(object):
                 sock.connect((self.addrDict[sendID], int(self.addrDict[self.addrDict[sendID]])))
                 self.outgoingChannels[recID] = sock
             elif(recID == self.siteID):
-                stream, addr = (self.recSock).accept()
+                stream, addr = (recSock).accept()
                 self.incomingChannels[sendID] = stream
 
     def runCommands(self, commandFilePath):
@@ -58,10 +57,10 @@ class site(object):
             for line in commandFile:
                 if "send" in line:
                     line = line.split()
-                    sendTo = line[-2]
-                    amt = line[-1]
+                    sendTo = int(line[-2])
+                    amt = int(line[-1])
                     self.localBalance -= amt
-                    self.outgoingChannels[sendTo].sendall(str(amt))
+                    self.outgoingChannels[sendTo].sendall(str(amt).encode())
                     self.receive()
                 
                 elif "sleep" in line:
@@ -182,7 +181,11 @@ def main():
     assert(len(arguments) == 4)
 
     citizen = site(int(arguments[1]))
+    time.sleep(5)
+
     citizen.setUp(arguments[2])
+    time.sleep(5)
+
     citizen.runCommands(arguments[3])
     citizen.printSnapshotCollection()
     citizen.closeAllConnections()
