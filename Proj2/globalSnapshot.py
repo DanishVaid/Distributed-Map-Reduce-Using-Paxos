@@ -1,4 +1,10 @@
 #!/bin/python
+
+######################
+# Danish Vaid, Sai Srimat
+# CS171, Project 2
+######################
+
 import queue
 import socket
 import time
