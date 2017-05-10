@@ -162,6 +162,7 @@ class site(object):
             if k:
                 k.close()
 
+    # For printing the entire collection and debugging
     def printSnapshotCollection(self):
         for i in self.snapshotCollection:
             self.snapshotCollection[i].printOutput()
