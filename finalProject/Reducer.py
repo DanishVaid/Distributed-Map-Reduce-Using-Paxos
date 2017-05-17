@@ -5,5 +5,29 @@ class Reducer():
 		self.ID = ID
 		self.fileNames = fileNames
 
+		self.conjoinedDict = {}
+
 
 	def reduce(self):
+		for fileName in fileNames:
+			f = open(fileName, 'r')
+
+			for line in f:
+				line = line.split(" ")
+				word = line[0]
+				count = line[1]
+
+				self.conjoinedDict[word] = wordCounts.get(word, count) + count 	#CHECK SYNTAX
+																				#CHECK INSTRUCTIONS
+																				#"IF A WORD IS NOT IN THE DICTIONARY, IT IS INSERTED
+																				#WITH A COUNT OF 1 IN ITS FIRST OCCURENCE"
+																				#HOW COULD THERE BE A FIRST OCCURENCE?
+
+
+	def writeToFile(self, fileName):
+		f = open(fileName, 'w')
+
+		for key, value in conjoinedDict.items():
+			f.write(str(key) + " " + str(value) + "\n")
+
+		f.close()
