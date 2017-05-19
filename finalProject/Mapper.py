@@ -1,15 +1,16 @@
 
 class Mapper(object):
 
-	def __init__(self, port, ID, fileName, offset, size):
-		self.port = port
+	def __init__(self, ID, port, fileName, offset, size):
 		self.ID = ID
+		self.port = port
 
 		self.fileName = fileName
 		self.offset = offset
 		self.size = size
 
 		self.wordCounts = {}
+		self.originalFileName = str(self.fileName) + "_I_" + str(self.ID)
 
 
 	def map(self):
