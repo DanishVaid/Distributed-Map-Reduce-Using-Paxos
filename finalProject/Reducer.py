@@ -6,6 +6,7 @@ class Reducer():
 		self.fileNames = fileNames
 
 		self.conjoinedDict = {}
+		self.outputFileName = "filler" + ".txt"
 
 
 	def reduce(self):
@@ -24,8 +25,8 @@ class Reducer():
 																				#HOW COULD THERE BE A FIRST OCCURENCE?
 
 
-	def writeToFile(self, fileName):
-		f = open(fileName, 'w')
+	def writeToFile(self):
+		f = open(outputFileName, 'w')
 
 		for key, value in conjoinedDict.items():
 			f.write(str(key) + " " + str(value) + "\n")

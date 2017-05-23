@@ -12,15 +12,10 @@ class Paxos(object):
 
 
 	def prepare(self):
-		message = "prepare" + str(ballotNum)	#SPLIT UP TO KEY/VALUE PAIR, +1
+		outMessage = "prepare" + str(ballotNum)	#SPLIT UP TO KEY/VALUE PAIR, +1
 
 
-
-	def receive(self):
-
-
-
-	def acknowledge(self):
+	def acknowledge(self, senderID, proposedNum):
 
 
 
@@ -32,4 +27,17 @@ class Paxos(object):
 
 
 
+	def receive(self):
+		#RECEIVE MESSAGE
+		inMessage = ""	#PLACEHOLDER
+		inMessage = inMessage.split(" ")
+
+		if inMessage[0] == "prepare":
+			acknowledge(senderID, proposedNum)
+
+		elif inMessage[0] == "accept":
+			accept(senderID, proposedNum)
+
+		else:
+			print "ERROR, should never reach here"
 

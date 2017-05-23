@@ -1,9 +1,8 @@
 
-class Node(object):
+class Node(object):	#MAY NOT NEED THIS CLASS
 	
 	def __init__(self):
-		#INITIALIZE
-		self.mappers = []
-		self.reducer = None
-		self.client = None
-		self.paxos = None
+		self.mappers = [Mapper(), Mapper()]
+		self.reducer = Reducer()
+		self.client = CLI()
+		self.paxos = Paxos()
