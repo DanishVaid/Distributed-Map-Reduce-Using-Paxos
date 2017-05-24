@@ -8,6 +8,10 @@ class Reducer():
 		self.conjoinedDict = {}
 		self.outputFileName = "filler" + ".txt"
 
+		self.socketFromCLI = None
+
+		self.connection = Connection()
+
 
 	def reduce(self):
 		for fileName in fileNames:
@@ -32,3 +36,8 @@ class Reducer():
 			f.write(str(key) + " " + str(value) + "\n")
 
 		f.close()
+
+
+	def makeConnections(self):
+		pass
+		#SHOULD ONLY HAVE ONE CONNECTION FROM CLI

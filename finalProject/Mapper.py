@@ -12,6 +12,10 @@ class Mapper(object):
 		self.wordCounts = {}
 		self.outputFileName = str(self.fileName) + "_I_" + str(self.ID) + ".txt"
 
+		self.socketFromCLI = None
+
+		self.connection = Connection()
+
 
 	def map(self):
 		f = open(self.fileName, 'r')
@@ -30,3 +34,8 @@ class Mapper(object):
 			f.write(str(key) + " " + str(value) + "\n")
 
 		f.close()
+
+
+	def makeConnections(self):
+		pass
+		#SHOULD ONLY HAVE ONE CONNECTION FROM CLI

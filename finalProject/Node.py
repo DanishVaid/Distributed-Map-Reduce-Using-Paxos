@@ -1,5 +1,5 @@
 
-class Node(object):	
+class Node(object):	#PROBABLY DON'T NEED THIS CLASS
 	
 	def __init__(self):
 		self.mappers = [Mapper(), Mapper()]

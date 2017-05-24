@@ -1,56 +1,17 @@
 
 class Connection(object):
 
-	def __init__(self, IP, port, inout):
-		self.IP = IP
-		self.port = port
+	def __init__(self):
+		pass
+		#POSSIBLY HAVE NOTHING
 
-		self.inout = inout
-
-
-	def openConnection(self):
-
+	def openConnection(acceptSock):
+		stream, clientAddress = acceptSock.accept()
+		return stream
 
 
-
-
-
-
-
-
-
-
-	################ connections ################ DONE
-
-	def openLinks():
-		#Global variables
-		global acceptSock
-		global incomeStream
-		#Global variables
-
-		#should accept incoming connections
-		acceptSock = createAcceptSocket(IP[ownID - 1], port[ownID - 1])
-
-		sleep(5)
-
-		for i in range(len(siteIDFrom)):	#open links that correspond to its site as TCP sockets
-			if siteIDFrom[i] == ownID:
-				connectSock.append(createConnectSocket(IP[siteIDTo[i] - 1], port[siteIDTo[i] - 1]))
-			else:	#not a link for me
-				connectSock.append(None)	#to structure list where index is siteID
-
-		for i in range(len(siteIDTo)):		
-			if siteIDTo[i] == ownID:		#check all incoming channels
-				stream, client_address = acceptSock.accept()
-				incomeStream.append(stream)	#store individual streams to recv from
-
-
-	def closeLinks():
-		for sock in connectSock:
-			if sock != None:
-				sock.close()
-		
-		acceptSock.close()
+	def closeSocket(sock):
+		sock.close()
 
 
 	def createConnectSocket(IP, port):
