@@ -22,8 +22,6 @@ class Mapper(object):
 			for word in words:
 				self.wordCounts[word] = wordCounts.get(word, 0) + 1
 
-		writeTofile()	#IS MAP RESPONSIBLE FOR WRITING TO FILE?
-
 
 	def writeToFile(self):
 		f = open(outputFileName, 'w')

@@ -12,19 +12,29 @@ class Paxos(object):
 
 
 	def prepare(self):
-		outMessage = "prepare" + str(ballotNum)	#SPLIT UP TO KEY/VALUE PAIR, +1
+		outMessage = "prepare " + str(ballotNum)	#SPLIT UP TO KEY/VALUE PAIR, +1
+
+		#SEND TO ALL OTHER PRMS
 
 
 	def acknowledge(self, senderID, proposedNum):
+		#CHECK IF PROPOSEDNUM > PREVIOUSLY ACCEPTED NUM
+			#IF SO, SEND ACK
 
+			#IF NOT, DON'T KNOW WHAT TO DO YET
 
 
 	def accept(self):
+		outMessage = "accept " + str(acceptNum)		#SPLIT UP TO KEY/VALUE PAIR, +1
+
+		#SEND TO ALL OTHER PRMS
 
 
+	def accepted(self, senderID, acceptingNum):	#RENAME VARIABLE
+		#CHECK IF ACCEPTINGNUM >= PREVIOUS ACCEPTNUM
+			#IF SO, SEND ACCEPTED MESSSAGE
 
-	def accepted(self):
-
+			#IF NOT, DON'T KNOW WHAT TO DO YET
 
 
 	def receive(self):

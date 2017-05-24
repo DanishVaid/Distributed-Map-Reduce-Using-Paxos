@@ -1,18 +1,26 @@
 
-class Node(object):	
-	
-	def __init__(self):
-		self.mappers = [Mapper(), Mapper()]
-		self.reducer = Reducer()
-		self.client = CLI()
-		self.paxos = Paxos()
+class Connection(object):
+
+	def __init__(self, IP, port, inout):
+		self.IP = IP
+		self.port = port
+
+		self.inout = inout
+
+
+	def openConnection(self):
 
 
 
 
 
 
-	################ connections ################
+
+
+
+
+
+	################ connections ################ DONE
 
 	def openLinks():
 		#Global variables
@@ -74,10 +82,3 @@ class Node(object):
 			createAcceptSocket(IP, port)
 
 		return sock
-
-
-	###########################################################################
-
-
-
-	

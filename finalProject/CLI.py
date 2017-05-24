@@ -2,7 +2,7 @@
 class CLI(object):
 	
 	def __init__(self):
-		self.operator = Operator()
+		
 
 
 	def takeCommand(self):
@@ -29,15 +29,15 @@ class CLI(object):
 			if command == "quit":
 				break
 			elif command == "map":
-				operator.map(args[0])
+				#SEND MESSAGE TO BOTH MAPPERS
 			elif command == "reduce":
-				operator.reduce(args)
+				#SEND MESSAGE TO REDUCER
 			elif command == "replicate":
-				operator.replicate(args[0])
+				#SEND MESSAGE TO PAXOS
 			elif command == "stop":
-				operator.stop()
+				#SEND MESSAGE TO PAXOS
 			elif command == "resume":
-				operator.resume()
+				#SEND MESSAGE TO PAXOS
 			elif command == "total":
 				operator.total(args)
 			elif command == "print":
@@ -46,3 +46,5 @@ class CLI(object):
 				operator.merge(args)
 			else:
 				print "Not a recognizable command"
+
+
