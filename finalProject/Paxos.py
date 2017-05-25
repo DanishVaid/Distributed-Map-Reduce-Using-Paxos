@@ -1,8 +1,12 @@
 
 class Paxos(object):
 	
-	def __init__(self, ID):
+	def __init__(self, ID, configFile):
 		self.ID = ID
+		self.configFile = configFile
+
+		self.IP = []
+		self.port = []
 
 		self.isActive = True
 		self.isLeader = False
@@ -11,7 +15,7 @@ class Paxos(object):
 		self.acceptNum = {0: 0}
 		self.acceptVal = None
 
-		self.socketFromPaxos = None
+		self.acceptSocket = None
 		self.socketsToPaxos = []
 
 		self.connection = Connection()
@@ -53,9 +57,8 @@ class Paxos(object):
 		self.isActive = True
 
 
-	def receive(self):
+	def receive(self, inMessage):
 		#RECEIVE MESSAGE
-		inMessage = ""	#PLACEHOLDER
 		inMessage = inMessage.split(" ")
 
 		if inMessage[0] == "prepare":
@@ -76,12 +79,19 @@ class Paxos(object):
 		elif inMessage[0] == "resume":
 			resume()
 		#ELIF MORE POSSIBLE CASES
-
 		else:
 			print("ERROR, should never reach here")
+
+
+	def config(self):
+		f = open(self.configFile, 'r')
+
+		for line in f:
+
 
 
 	def makeConnection(self):
 		pass
 		#SHOULD HAVE CONNECTION FROM CLI
+		
 		#SHOULD ALSO HAVE INCOMING AND OUTGOING CONNECTION TO ALL OTHER PAXOS

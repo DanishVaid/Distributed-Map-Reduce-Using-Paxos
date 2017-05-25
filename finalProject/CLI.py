@@ -1,20 +1,22 @@
 
 class CLI(object):
 	
-	def __init__(self):
-		self.dataQuery = Query()
+	def __init__(self, configFile):
+		self.configFile = configFile	#File name of config file for CLI
 
-		self.sockToMapper1 = None
-		self.sockToMapper2 = None
-		self.sockToReducer = None
-		self.sockToPaxos = None
+		self.dataQuery = Query()		#Object for data queries
 
-		self.mapper1Port = None
+		self.mapper1Port = None			#Port number to other processes in same node
 		self.mapper2Port = None
 		self.reducerport = None
 		self.paxosPort = None
 
-		self.connection = Connection()
+		self.sockToMapper1 = None		#Sockets to other processes in same node
+		self.sockToMapper2 = None
+		self.sockToReducer = None
+		self.sockToPaxos = None
+
+		self.connection = Connection()	#Object for making socket connections
 
 
 	def takeCommand(self):
@@ -38,18 +40,18 @@ class CLI(object):
 			command = consoleInput[0]
 			args = consoleInput[1:]
 
-			if command == "quit":
+			if command == "exit":
 				break
 			elif command == "map":
 				#SEND MESSAGE TO BOTH MAPPERS
 			elif command == "reduce":
 				#SEND MESSAGE TO REDUCER
 			elif command == "replicate":	#part1
-				#SEND MESSAGE TO PAXOS
+				sockToPaxos.send(("replicate " + str(args[0])).encode())
 			elif command == "stop":			#part1
-				#SEND MESSAGE TO PAXOS
+				sockToPaxos.send(("stop").encode())
 			elif command == "resume":		#part1
-				#SEND MESSAGE TO PAXOS
+				sockToPaxos.send(("resume").encode())
 			elif command == "total":		#part1
 				dataQuery.total(args)
 			elif command == "print":		#part1
@@ -59,16 +61,21 @@ class CLI(object):
 			else:
 				print("Not a recognizable command")
 
+		print("Program exitted.")
+
 
 	def config(self):
-		pass
+		f = open(self.configFile, 'r')
+
+		for line in f:
+			#do something
+
 		#READ FROM CONFIG FILE FOR IP/PORT OF PROCESSES IN NODE
 
 		#INITIALIZE CONNECTIONS WITH CONNECTION OBJECT
 
 
 	def makeConnections(self):
-		pass
 		#SHOULD HAVE OUTGOING CONNECTIONS TO MAP1, MAP2, REDUCE, AND PAXOS
 		self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
 		self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
