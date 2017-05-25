@@ -9,6 +9,11 @@ class CLI(object):
 		self.sockToReducer = None
 		self.sockToPaxos = None
 
+		self.mapper1Port = None
+		self.mapper2Port = None
+		self.reducerport = None
+		self.paxosPort = None
+
 		self.connection = Connection()
 
 
@@ -65,3 +70,7 @@ class CLI(object):
 	def makeConnections(self):
 		pass
 		#SHOULD HAVE OUTGOING CONNECTIONS TO MAP1, MAP2, REDUCE, AND PAXOS
+		self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
+		self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
+		self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerport)
+		self.sockToPaxos = connection.createConnectSock("127.0.0.1", self.paxosPort)
