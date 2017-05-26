@@ -12,7 +12,9 @@ class Log():	# MAY NOT NEED THIS CLASS
 		self.fileNames.append(fileName)
 		self.dictionaries.append(assocDict)
 
-		with open(self.logFile) as f:
+		with open(self.logFile, "w") as f:
+			f.seek(0)
+			f.truncate()
 			f.write(self.toString())
 
 
@@ -60,21 +62,21 @@ def buildLogFromString(inputString):
 
 
 
-### TESTING AREA ###
-def testing():
-	tempObj = Log()
-	tempObj.append("file1",{"key1": "value1", "key2": "value2", "randkey":"randval"})
-	tempObj.append("file2",{"key3": "value3", "key4": "value4", "randkey":"randval"})
-	inStringFormat = tempObj.toString()
-	print("To String Output:")
-	print(inStringFormat)
-	print("Now Rebuilding and printing")
-	tempObj = buildLogFromString(inStringFormat)
-	print(tempObj.toString())
-	print("\nAnd indivisual parts just to be sure: ")
-	print("    ", tempObj.fileNames)
-	print("    ", tempObj.dictionaries)
-# Run testing
-testing()
+# ### TESTING AREA ###
+# def testing():
+# 	tempObj = Log()
+# 	tempObj.append("file1",{"key1": "value1", "key2": "value2", "randkey":"randval"})
+# 	tempObj.append("file2",{"key3": "value3", "key4": "value4", "randkey":"randval"})
+# 	inStringFormat = tempObj.toString()
+# 	print("To String Output:")
+# 	print(inStringFormat)
+# 	print("Now Rebuilding and printing")
+# 	tempObj = buildLogFromString(inStringFormat)
+# 	print(tempObj.toString())
+# 	print("\nAnd indivisual parts just to be sure: ")
+# 	print("    ", tempObj.fileNames)
+# 	print("    ", tempObj.dictionaries)
+# # Run testing
+# testing()
 
-### END OF TESTING AREA ###
+# ### END OF TESTING AREA ###
