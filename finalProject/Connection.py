@@ -24,6 +24,7 @@ def createConnectSocket(IP, port):
 	return sock
 
 def createAcceptSocket(IP, port):
+	port = int(port)
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	try:

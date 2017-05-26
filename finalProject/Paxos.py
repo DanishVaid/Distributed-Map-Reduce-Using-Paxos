@@ -155,6 +155,7 @@ class Paxos(object):
 
 		elif inMessage[0] == "replicate":
 			if self.isActive:
+				self.myProposal = inMessage[1]
 				self.prepare()
 
 		elif inMessage[0] == "stop":
@@ -179,32 +180,30 @@ class Paxos(object):
 	
 
 	def makeConnections(self):
+		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
+
 		for i in range(1, len(self.ipAddrs)):
 			IP = self.ipAddrs[i]
 			port = self.ports[i]
-			if i == self.selfID:
-				# Connections from CLI
-				self.mySock = Connection.createAcceptSocket(IP, port)
-
-			# sleep(5)
 
 			# Other Paxos Sockets
 			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
 
-			self.incomeStream = Connection.openConnection(self.mySock)
+		self.incomeStream = Connection.openConnection(self.mySock)
+
+		print("--- ALL CONNECTIONS MADE ---")
 
 
 	def receiveMessages(self):
-		for i in range(len(self.incomeStream)):
-			try:
-				self.incomeStream[i].settimeout(1)
+		try:
+			self.incomeStream.settimeout(1)
 
-				data = self.incomeStream[i].recv(1024)
-				if len(data) > 0:
-					self.processMessage(data)
+			data = self.incomeStream.recv(1024)
+			if len(data) > 0:
+				self.processMessage(data)
 
-			except socket.timeout:
-				continue
+		except socket.timeout:
+			pass
 
 
 	def reset(self):
