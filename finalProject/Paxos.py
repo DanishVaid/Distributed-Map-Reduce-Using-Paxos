@@ -62,7 +62,7 @@ class Paxos(object):
 				# 0		1				2			3				4				5	
 				# ack	ballotNum		selfID		acceptNum0		acceptID		acceptVal
 				outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
-				self.socketsToPaxos[senderselfID].send(outMessage).encode())
+				self.socketsToPaxos[senderselfID].send((outMessage).encode())
 		
 		# Else
 		elif proposedNum > self.ballotNum[0]:
@@ -213,19 +213,27 @@ class Paxos(object):
 		self.hasMajority = False
 		self.isFirstAccept = True
 
+############################ END PAXOS CLASS ##############################
 
 def main():
 	# recieve function
 	# process on receive
 
-	if len(sys.argv) != 2:
-		print("--- ERROR : Please provide the site ID ---\n")
+	if len(sys.argv) != 3:
+		print("--- ERROR : Please provide the site ID and config file ---\n")
 		exit(1)
 
 	mainPaxos = Paxos(sys.argv[1], sys.argv[2])
 	mainPaxos.config()
+
+	print(str(mainPaxos.ipAddrs))
+	print(str(mainPaxos.ports))
+
 	mainPaxos.makeConnections()
 
 	while True:
 		receiveMessages()
 		sleep(.2)
+
+if __name__ == "__main__":
+	main()

@@ -18,7 +18,7 @@ def createConnectSocket(IP, port):
 	except socket.error as sockError:
 		print(sockError, IP, port)
 		sleep(1)
-		Connection.createConnectSocket(IP, port)
+		createConnectSocket(IP, port)
 
 	return sock
 
@@ -33,6 +33,6 @@ def createAcceptSocket(IP, port):
 	except socket.error as sockError:
 		print(sockError, IP, port)
 		sleep(1)
-		Connection.createAcceptSocket(IP, port)
+		createAcceptSocket(IP, port)
 
 	return sock

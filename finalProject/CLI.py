@@ -1,11 +1,12 @@
+#!/bin/python3
+
 import Query
+import Connection
 
 class CLI(object):
 	
 	def __init__(self, configFile):
 		self.configFile = configFile	#File name of config file for CLI
-
-		self.dataQuery = Query.Query()		#Object for data queries
 
 		self.mapper1Port = None			#Port number to other processes in same node
 		self.mapper2Port = None
@@ -16,8 +17,6 @@ class CLI(object):
 		self.sockToMapper2 = None
 		self.sockToReducer = None
 		self.sockToPaxos = None
-
-		self.connection = Connection()	#Object for making socket connections
 
 
 	def takeCommand(self):
@@ -56,11 +55,11 @@ class CLI(object):
 			elif command == "resume":		#part1
 				sockToPaxos.send(("resume").encode())
 			elif command == "total":		#part1
-				dataQuery.total(args)
+				Query.total(args)
 			elif command == "print":		#part1
-				dataQuery.printFileNames()
-			else command == "merge":		#part1
-				dataQuery.merge(args)
+				Query.printFileNames()
+			elif command == "merge":		#part1
+				Query.merge(args)
 			else:
 				print("Not a recognizable command")
 
@@ -68,19 +67,34 @@ class CLI(object):
 
 
 	def config(self):
-		f = open(self.configFile, 'r')
+		# f = open(self.configFile, 'r')
 
-		for line in f:
-			#do something
+		# for line in f:
+		# 	#do something
 
-		#READ FROM CONFIG FILE FOR IP/PORT OF PROCESSES IN NODE
+		# #READ FROM CONFIG FILE FOR IP/PORT OF PROCESSES IN NODE
 
-		#INITIALIZE CONNECTIONS WITH CONNECTION OBJECT
+		# #INITIALIZE CONNECTIONS WITH CONNECTION OBJECT
+
+		self.paxosPort = 5005
 
 
 	def makeConnections(self):
 		#SHOULD HAVE OUTGOING CONNECTIONS TO MAP1, MAP2, REDUCE, AND PAXOS
-		self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
-		self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
-		self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerport)
-		self.sockToPaxos = connection.createConnectSock("127.0.0.1", self.paxosPort)
+		# self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
+		# self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
+		# self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerport)
+		self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
+
+
+############################ END CLI CLASS ##############################
+
+def main():
+	client = CLI("nonexistent.txt")
+
+	client.config()
+	client.makeConnections()
+	client.takeCommand()
+
+if __name__ == "__main__":
+	main()

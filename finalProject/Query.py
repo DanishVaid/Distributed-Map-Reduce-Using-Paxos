@@ -1,13 +1,13 @@
 
 
 def total(self, positions):
-	pass
+	print("In Query.total()")
 
 
 def printFileNames(self):
-	pass
+	print("In Query.printFileNames()")
 
 
 def merge(pos1, pos2):
-	pass
+	print("In Query.merge")
 
