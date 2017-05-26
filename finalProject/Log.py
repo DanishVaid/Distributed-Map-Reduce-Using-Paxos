@@ -34,17 +34,42 @@ class Log():	# MAY NOT NEED THIS CLASS
 		return finalString
 	
 
-	def buildFromString(self):
-		pass
+# Static Method - Makes a log object from string
+def buildLogFromString(inputString):
+		lines = inputString.split("\n")
+
+		finalObj = Log()
+
+		for i in range(len(lines) - 1):
+			currBreak = lines[i].split("=")
+			filename = currBreak[0]
+			pairs = currBreak[1].split(",")
+			assocDict = {}
+			for i in pairs:
+				parts = i.split(":")
+				assocDict[parts[0]] = parts[1]
+
+			finalObj.append(filename, assocDict)
+
+		return finalObj
 
 
+
+### TESTING AREA ###
 def testing():
 	tempObj = Log()
 	tempObj.append("file1",{"key1": "value1", "key2": "value2", "randkey":"randval"})
 	tempObj.append("file2",{"key3": "value3", "key4": "value4", "randkey":"randval"})
 	inStringFormat = tempObj.toString()
-	
-
-
+	print("To String Output:")
+	print(inStringFormat)
+	print("Now Rebuilding and printing")
+	tempObj = buildLogFromString(inStringFormat)
+	print(tempObj.toString())
+	print("\nAnd indivisual parts just to be sure: ")
+	print("    ", tempObj.fileNames)
+	print("    ", tempObj.dictionaries)
 # Run testing
 testing()
+
+### END OF TESTING AREA ###
