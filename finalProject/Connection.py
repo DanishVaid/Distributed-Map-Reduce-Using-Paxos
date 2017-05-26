@@ -1,45 +1,38 @@
+import socket
+from time import sleep
 
-class Connection(object):
+def openConnection(acceptSock):
+	stream, clientAddress = acceptSock.accept()
+	return stream
 
-	def __init__(self):
-		pass
-		#POSSIBLY HAVE NOTHING
+def closeSocket(sock):
+	sock.close()
 
-	def openConnection(acceptSock):
-		stream, clientAddress = acceptSock.accept()
-		return stream
+def createConnectSocket(IP, port):
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+	try:
+		address = (IP, port)
+		sock.connect(address)
 
-	def closeSocket(sock):
-		sock.close()
+	except socket.error as sockError:
+		print(sockError, IP, port)
+		sleep(1)
+		Connection.createConnectSocket(IP, port)
 
+	return sock
 
-	def createConnectSocket(IP, port):
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def createAcceptSocket(IP, port):
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-		try:
-			address = (IP, port)
-			sock.connect(address)
+	try:
+		address = (IP, port)
+		sock.bind(address)
+		sock.listen(10)
 
-		except socket_error as sockError:
-			print sockError, IP, port
-			sleep(1)
-			createConnectSocket(IP, port)
+	except socket.error as sockError:
+		print(sockError, IP, port)
+		sleep(1)
+		Connection.createAcceptSocket(IP, port)
 
-		return sock
-
-
-	def createAcceptSocket(IP, port):
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-		try:
-			address = (IP, port)
-			sock.bind(address)
-			sock.listen(10)
-
-		except socket_error as sockError:
-			print sockError, IP, port
-			sleep(1)
-			createAcceptSocket(IP, port)
-
-		return sock
+	return sock

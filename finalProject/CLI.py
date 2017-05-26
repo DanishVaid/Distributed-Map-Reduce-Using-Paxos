@@ -1,10 +1,11 @@
+import Query
 
 class CLI(object):
 	
 	def __init__(self, configFile):
 		self.configFile = configFile	#File name of config file for CLI
 
-		self.dataQuery = Query()		#Object for data queries
+		self.dataQuery = Query.Query()		#Object for data queries
 
 		self.mapper1Port = None			#Port number to other processes in same node
 		self.mapper2Port = None
@@ -43,8 +44,10 @@ class CLI(object):
 			if command == "exit":
 				break
 			elif command == "map":
+				pass				# Not needed for part 1
 				#SEND MESSAGE TO BOTH MAPPERS
 			elif command == "reduce":
+				pass				# Not needed for part 1
 				#SEND MESSAGE TO REDUCER
 			elif command == "replicate":	#part1
 				sockToPaxos.send(("replicate " + str(args[0])).encode())

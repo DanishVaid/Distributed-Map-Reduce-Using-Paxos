@@ -1,0 +1,2 @@
+client 5001
+paxos 5005

@@ -53,7 +53,7 @@ class Node(object):	#PROBABLY DON'T NEED THIS CLASS
 			sock.connect(address)
 
 		except socket_error as sockError:
-			print sockError, IP, port
+			print(sockError, IP, port)
 			sleep(1)
 			createConnectSocket(IP, port)
 
@@ -69,7 +69,7 @@ class Node(object):	#PROBABLY DON'T NEED THIS CLASS
 			sock.listen(10)
 
 		except socket_error as sockError:
-			print sockError, IP, port
+			print(sockError, IP, port)
 			sleep(1)
 			createAcceptSocket(IP, port)
 
