@@ -9,6 +9,7 @@ def closeSocket(sock):
 	sock.close()
 
 def createConnectSocket(IP, port):
+	port = int(port)
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	try:

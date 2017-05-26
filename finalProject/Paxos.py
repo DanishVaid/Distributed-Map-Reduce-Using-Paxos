@@ -49,6 +49,9 @@ class Paxos(object):
 
 		#SEND TO ALL OTHER PRMS
 		for sock in self.socketsToPaxos:
+			if sock == None:
+				continue
+
 			sock.send(outMessage.encode())
 
 
@@ -94,6 +97,9 @@ class Paxos(object):
 
 			# SEND TO ALL OTHER PRMS
 			for sock in self.socketsToPaxos:
+				if sock == None:
+					continue
+
 				sock.send(("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal)).encode())
 
 
@@ -108,6 +114,8 @@ class Paxos(object):
 			self.acceptVal = incomingAcceptedValue
 			if self.isFirstAccept:
 				for sock in self.socketsToPaxos:
+					if sock == None:
+						continue
 					# 0			1			2			3
 					# accept	accept1		accept2		acceptVal
 					msg = "accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
@@ -170,7 +178,7 @@ class Paxos(object):
 	
 
 	def makeConnections(self):
-		for i in range(len(self.ipAddrs)):
+		for i in range(1, len(self.ipAddrs)):
 			IP = self.ipAddrs[i]
 			port = self.ports[i]
 			if i == self.selfID:
@@ -185,7 +193,7 @@ class Paxos(object):
 			self.incomeStream = Connection.openConnection(self.mySock)
 
 
-	def receiveMessages():
+	def receiveMessages(self):
 		for i in range(len(self.incomeStream)):
 			try:
 				self.incomeStream[i].settimeout(1)
