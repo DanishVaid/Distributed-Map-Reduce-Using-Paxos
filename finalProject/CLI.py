@@ -20,8 +20,9 @@ class CLI(object):
 
 
 	def takeCommand(self):
+		print("")
 		print("List of data processing commands:")
-		print("map\t\t\tfilename")
+		print("map\t\tfilename")
 		print("reduce\t\tfilename1 filename2 ...")
 		print("replicate\tfilename")
 		print("stop")
@@ -32,6 +33,7 @@ class CLI(object):
 		print("total\t\tpos1 pos2 ...")
 		print("print")
 		print("merge\t\tpos1 pos2 ...")
+		print("")
 
 		while True:
 			consoleInput = input("Command (enter 'exit' to quit):")
@@ -49,11 +51,11 @@ class CLI(object):
 				pass				# Not needed for part 1
 				#SEND MESSAGE TO REDUCER
 			elif command == "replicate":	#part1
-				self.sockToPaxos.send(("replicate " + str(args[0])).encode())
+				self.sockToPaxos.sendall(("replicate " + str(args[0])).encode())
 			elif command == "stop":			#part1
-				self.sockToPaxos.send(("stop").encode())
+				self.sockToPaxos.sendall(("stop").encode())
 			elif command == "resume":		#part1
-				self.sockToPaxos.send(("resume").encode())
+				self.sockToPaxos.sendall(("resume").encode())
 			elif command == "total":		#part1
 				Query.total(args[0], args[1])
 			elif command == "print":		#part1
@@ -87,6 +89,13 @@ class CLI(object):
 		self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
 
 
+	def closeConnections(self):
+		# Connection.closeSocket(self.sockToMapper1)
+		# Connection.closeSocket(self.sockToMapper2)
+		# Connection.closeSocket(self.sockToReducer)
+		Connection.closeSocket(self.sockToPaxos)
+
+
 ############################ END CLI CLASS ##############################
 
 def main():
@@ -95,6 +104,8 @@ def main():
 	client.config()
 	client.makeConnections()
 	client.takeCommand()
+
+	client.closeConnections()
 
 if __name__ == "__main__":
 	main()

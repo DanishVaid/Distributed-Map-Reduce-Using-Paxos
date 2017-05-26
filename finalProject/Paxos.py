@@ -53,7 +53,7 @@ class Paxos(object):
 			if sock == None:
 				continue
 
-			sock.send(outMessage.encode())
+			sock.sendall(outMessage.encode())
 
 
 	def acknowledge(self, proposedNum, senderselfID):
@@ -66,12 +66,12 @@ class Paxos(object):
 				# 0		1				2			3				4				5	
 				# ack	ballotNum		selfID		acceptNum0		acceptID		acceptVal
 				outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
-				self.socketsToPaxos[senderselfID].send((outMessage).encode())
+				self.socketsToPaxos[senderselfID].sendall((outMessage).encode())
 		
 		# Else
 		elif proposedNum > self.ballotNum[0]:
 			self.ballotNum = (proposedNum, self.ballotNum[1])
-			self.socketsToPaxos[senderselfID].send(("ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)).encode())
+			self.socketsToPaxos[senderselfID].sendall(("ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)).encode())
 
 
 	def accept(self, incomingAcceptVal, incomingBallotNum):
@@ -101,7 +101,7 @@ class Paxos(object):
 				if sock == None:
 					continue
 
-				sock.send(("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal)).encode())
+				sock.sendall(("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal)).encode())
 
 
 	def accepted(self, incomingBallotNum, incomingAcceptedValue):	#RENAME VARIABLE
@@ -120,7 +120,7 @@ class Paxos(object):
 					# 0			1			2			3
 					# accept	accept1		accept2		acceptVal
 					msg = "accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
-					sock.send((msg).encode())
+					sock.sendall((msg).encode())
 				self.isFirstAccept = False
 			
 			self.numAcceptsReceived += 1
@@ -168,15 +168,16 @@ class Paxos(object):
 			print(" --- ERROR, should never reach here --- ")
 
 
-	def config(self):
-		f = open(self.configFile, 'r')
+	def receiveMessages(self):
+		try:
+			self.incomeStream.settimeout(1)
 
-		for line in f:
-			line = line.split()
-			self.ipAddrs.append(line[0])
-			self.ports.append(line[1])
+			data = self.incomeStream.recv(1024)
+			if len(data) > 0:
+				self.processMessage(data)
 
-		self.minMajority = floor(len(self.ipAddrs) / 2) + 1
+		except socket.timeout:
+			pass
 	
 
 	def makeConnections(self):
@@ -194,16 +195,21 @@ class Paxos(object):
 		print("--- ALL CONNECTIONS MADE ---")
 
 
-	def receiveMessages(self):
-		try:
-			self.incomeStream.settimeout(1)
+	def closeConnections(self):
+		Connection.closeSocket(self.mySock)
+		for i in range(1, len(self.socketsToPaxos)):
+			Connection.closeSocket(self.socketsToPaxos[i])
 
-			data = self.incomeStream.recv(1024)
-			if len(data) > 0:
-				self.processMessage(data)
 
-		except socket.timeout:
-			pass
+	def config(self):
+		f = open(self.configFile, 'r')
+
+		for line in f:
+			line = line.split()
+			self.ipAddrs.append(line[0])
+			self.ports.append(line[1])
+
+		self.minMajority = floor(len(self.ipAddrs) / 2) + 1
 
 
 	def reset(self):
@@ -242,6 +248,8 @@ def main():
 	while True:
 		mainPaxos.receiveMessages()
 		sleep(.2)
+
+	mainPaxos.closeConnections()	#MAKE CONDITION TO EXIT INFINITE LOOP
 
 if __name__ == "__main__":
 	main()
