@@ -1,37 +1,43 @@
 #!/bin/python3
 
-import sys
+import sys				# For command line arguments
 import Connection		# Makes the Sockets
 import Log				# Our Log Class
 from math import floor
+from time import sleep
 
 class Paxos(object):
 	
 	def __init__(self, selfID, configFile):
 		self.selfID = selfID
+
+		self.isActive = True
+		self.isLeader = False
+
 		self.configFile = configFile
 		self.log = Log.Log()			# Log
 
 		self.ipAddrs = [None]			# Make the first element None
 		self.ports = [None]				# Make the first element None
 
-		self.isActive = True
-		self.isLeader = False
+		self.minMajority = 0
 
 		self.ballotNum = (0, 0)			# Tuples storing ballotNum : siteselfID
 		self.acceptNum = (0, 0)			# Tuples storing acceptNum : siteselfID
 		self.acceptVal = 0
-		self.minMajority = None
+
 		self.numPromises = 0
 		self.numVotes = 0
 		self.numAcceptsReceived = 0
-		self.ackVals = []
+
 		self.incomingBallotNums = []
-		self.myProposal = None			# NEED TO DEVELOP - next log entry
+		self.ackVals = []
+
 		self.hasMajority = False
 		self.isFirstAccept = True
 
 		self.mySock = None
+		self.incomeStream = None
 		self.socketsToPaxos = [None]	# Make the first element None
 
 	def prepare(self):
@@ -55,7 +61,8 @@ class Paxos(object):
 				self.ballotNum = (proposedNum, self.ballotNum[1])
 				# 0		1				2			3				4				5	
 				# ack	ballotNum		selfID		acceptNum0		acceptID		acceptVal
-				self.socketsToPaxos[senderselfID].send(("ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)).encode())
+				outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
+				self.socketsToPaxos[senderselfID].send(outMessage).encode())
 		
 		# Else
 		elif proposedNum > self.ballotNum[0]:
@@ -94,7 +101,7 @@ class Paxos(object):
 		
 		# CHECK IF ACCEPTINGNUM >= PREVIOUS ACCEPTNUM
 		checkStatement = (incomingBallotNum[0] > self.ballotNum[0]) or \
-				 (incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] > self.ballotNum[1])
+				(incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] > self.ballotNum[1])
 
 		if checkStatement:
 			self.acceptNum = incomingBallotNum
@@ -170,8 +177,41 @@ class Paxos(object):
 				# Connections from CLI
 				self.mySock = Connection.createAcceptSocket(IP, port)
 
+			sleep(5)
+
 			# Other Paxos Sockets
 			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
+
+			self.incomeStream = Connection.openConnection(self.mySock)
+
+
+	def receiveMessages():
+		for i in range(len(self.incomeStream)):
+			try:
+				self.incomeStream[i].settimeout(1)
+
+				data = incomeStream[i].recv(1024)
+				if len(data) > 0:
+					self.processMessage(data)
+
+			except socket.timeout:
+				continue
+
+
+	def reset(self):
+		self.ballotNum = (0, 0)
+		self.acceptNum = (0, 0)
+		self.acceptVal = 0
+
+		self.numPromises = 0
+		self.numVotes = 0
+		self.numAcceptsReceived = 0
+
+		self.incomingBallotNums = []
+		self.ackVals = []
+
+		self.hasMajority = False
+		self.isFirstAccept = True
 
 
 def main():
@@ -182,9 +222,10 @@ def main():
 		print("--- ERROR : Please provide the site ID ---\n")
 		exit(1)
 
-	mainPaxos = Paxos(sys.argv[1], "pax_config.txt")
+	mainPaxos = Paxos(sys.argv[1], sys.argv[2])
 	mainPaxos.config()
 	mainPaxos.makeConnections()
 
 	while True:
-		pass
+		receiveMessages()
+		sleep(.2)

@@ -5,10 +5,15 @@ class Log():	# MAY NOT NEED THIS CLASS
 		self.fileNames = []		# List of files names
 		self.dictionaries = []	# List of dictionaries
 
+		self.logFile = "tempLogFile.txt"
+
 
 	def append(self, fileName, assocDict):
 		self.fileNames.append(fileName)
 		self.dictionaries.append(assocDict)
+
+		with open(self.logFile) as f:
+			f.write(self.toString())
 
 
 	def size(self):
