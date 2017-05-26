@@ -1,5 +1,6 @@
 #!/bin/python3
 
+import socket
 import sys				# For command line arguments
 import Connection		# Makes the Sockets
 import Log				# Our Log Class
@@ -185,7 +186,7 @@ class Paxos(object):
 				# Connections from CLI
 				self.mySock = Connection.createAcceptSocket(IP, port)
 
-			sleep(5)
+			# sleep(5)
 
 			# Other Paxos Sockets
 			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
@@ -198,7 +199,7 @@ class Paxos(object):
 			try:
 				self.incomeStream[i].settimeout(1)
 
-				data = incomeStream[i].recv(1024)
+				data = self.incomeStream[i].recv(1024)
 				if len(data) > 0:
 					self.processMessage(data)
 
@@ -240,7 +241,7 @@ def main():
 	mainPaxos.makeConnections()
 
 	while True:
-		receiveMessages()
+		mainPaxos.receiveMessages()
 		sleep(.2)
 
 if __name__ == "__main__":

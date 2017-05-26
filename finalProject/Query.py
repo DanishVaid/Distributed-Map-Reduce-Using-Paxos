@@ -1,10 +1,10 @@
 
 
-def total(self, positions):
+def total(positions):
 	print("In Query.total()")
 
 
-def printFileNames(self):
+def printFileNames():
 	print("In Query.printFileNames()")
 
 

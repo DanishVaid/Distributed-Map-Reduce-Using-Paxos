@@ -49,17 +49,17 @@ class CLI(object):
 				pass				# Not needed for part 1
 				#SEND MESSAGE TO REDUCER
 			elif command == "replicate":	#part1
-				sockToPaxos.send(("replicate " + str(args[0])).encode())
+				self.sockToPaxos.send(("replicate " + str(args[0])).encode())
 			elif command == "stop":			#part1
-				sockToPaxos.send(("stop").encode())
+				self.sockToPaxos.send(("stop").encode())
 			elif command == "resume":		#part1
-				sockToPaxos.send(("resume").encode())
+				self.sockToPaxos.send(("resume").encode())
 			elif command == "total":		#part1
-				Query.total(args)
+				Query.total(args[0], args[1])
 			elif command == "print":		#part1
 				Query.printFileNames()
 			elif command == "merge":		#part1
-				Query.merge(args)
+				Query.merge(args[0], args[1])
 			else:
 				print("Not a recognizable command")
 
