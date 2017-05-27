@@ -12,43 +12,42 @@ class Paxos(object):
 	def __init__(self, selfID, configFile):
 		self.selfID = selfID
 
-		self.isActive = True
-		self.isLeader = False
+		self.isActive = True				# Used for resume/stop message from the CLI
+		self.isLeader = False				# CURRENTLY NOT USED
 
-		self.configFile = configFile
-		self.log = Log.Log()			# Log
+		self.configFile = configFile		# File name to read in configurations
+		self.log = Log.Log()				# Log object
 
-		self.ipAddrs = [None]			# Make the first element None
-		self.ports = [None]				# Make the first element None
+		self.minMajority = 0				# Minimum number of votes for quorum
 
-		self.minMajority = 0
+		self.ballotNum = (0, 0)				# Tuples storing ballotNum : siteselfID, index of the log to insert into
+		self.acceptNum = (0, 0)				# Tuples storing acceptNum : siteselfID
+		self.acceptVal = None				# Dictionary to be stored into a log entry
 
-		self.ballotNum = (0, 0)			# Tuples storing ballotNum : siteselfID
-		self.acceptNum = (0, 0)			# Tuples storing acceptNum : siteselfID
-		self.acceptVal = 0
+		self.numPromises = 0				# Used to keep track of number of promises, will be compared to minMajority
+		self.numVotes = 0					# Used to keep track of number of votes, will be compared to minMajority
+		self.numAcceptsReceived = 0			# Used to keep track of number of nodes that have accepted the proposed value
 
-		self.numPromises = 0
-		self.numVotes = 0
-		self.numAcceptsReceived = 0
+		self.incomingAcceptNums = []		# Used to check if responding nodes' IDs that have sent ballot nums
+		self.ackAcceptVals = []				# Used to check if responding nodes have values in their ballot
 
-		self.incomingBallotNums = []
-		self.ackVals = []
+		self.hasMajorityPromises = False	# Used for checking majority to initiate insertion of a dictionary to the log
+		self.isFirstAccept = True			# Nodes should not send more accept messages after the first received accept of a unique value
 
-		self.hasMajority = False
-		self.isFirstAccept = True
+		self.ipAddrs = [None]				# Make the first element None. List of IP addresses of all other Paxos nodes
+		self.ports = [None]					# Make the first element None. List of port numbers of all other Paxos nodes
 
-		self.mySock = None
-		self.incomeStreams = []
-		self.socketsToPaxos = [None]	# Make the first element None
+		self.mySock = None					# Socket for incoming messages
+		self.incomeStreams = []				# Gather all the streams to check for messages
+		self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
 
 	def prepare(self):
-		# Check if i am leader -- TO DO
+		# CHECK IF I'M LEADER
 
 		self.myProposal = self.log.getSize()
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
 
-		#SEND TO ALL OTHER PRMS
 		for sock in self.socketsToPaxos:
 			if sock == None:
 				continue
@@ -56,77 +55,83 @@ class Paxos(object):
 			sock.sendall(outMessage.encode())
 
 
-	def acknowledge(self, proposedNum, senderselfID):
-		# CHECK IF PROPOSEDNUM > PREVIOUSLY ACCEPTED NUM
+	def acknowledge(self, incomingBallotNum):
+		# incomingBallotNum[0] = Sender's ballot number
+		# incomingBallotNum[1] = Sender's ID
 
-		# If equal compare IDs
-		if proposedNum == self.ballotNum[0]:
-			if senderselfID > self.selfID:
-				self.ballotNum = (proposedNum, self.ballotNum[1])
-				# 0		1				2			3				4				5	
-				# ack	ballotNum		selfID		acceptNum0		acceptID		acceptVal
-				outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
-				self.socketsToPaxos[senderselfID].sendall((outMessage).encode())
+		# If incomingBallotNum does not meet condition, do nothing
+		# CHECK LOGIC, IF THIS IS A WORKING CHECK STATEMENT
+		if incomingBallotNum[0] <= self.ballotNum[0]:
+			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
+				return
+
+		self.ballotNum = (incomingBallotNum[0], incomingBallotNum[1])
+
+		# 0		1					2					3				4				5	
+		# ack	incBallotNum[0]		incBallotNum[1]		acceptNum[0]	acceptNum[1]	acceptVal
+		outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
+		self.socketsToPaxos[incomingBallotNum[1]].sendall((outMessage).encode())
 		
-		# Else
-		elif proposedNum > self.ballotNum[0]:
-			self.ballotNum = (proposedNum, self.ballotNum[1])
-			self.socketsToPaxos[senderselfID].sendall(("ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)).encode())
-
-
-	def accept(self, incomingAcceptVal, incomingBallotNum):
-		if self.hasMajority:			# Check to make sure you don't start again
+		
+	def accept(self, incomingBallotNum, incomingAccepNum, incomingAcceptVal):
+		if self.hasMajorityPromises:	# Check to make sure you don't start again
 			return
 
 		self.numPromises += 1
 
-		self.ackVals.append(incomingAcceptVal)
-		self.incomingBallotNums.append(incomingBallotNum)
+		self.ackAcceptVals.append(incomingAcceptVal)
+		self.incomingAcceptNums.append(incomingAcceptNum[0])
 
 		if self.numPromises >= self.minMajority:
-			self.hasMajority = True
-			tempCheck = True
-			for i in self.ackVals:
-				if i != 0:
-					tempCheck = False
+			self.hasMajorityPromises = True
+			hasReceivedNoOtherValues = True
 
-			if tempCheck:
+			for i in self.ackAcceptVals:
+				if i != None:
+					hasReceivedNoOtherValues = False
+
+			if hasReceivedNoOtherValues:
 				self.acceptVal = self.myProposal
 			else:
-				highestBallotIndex = self.incomingBallotNums.index(max(self.incomingBallotNums))
-				self.acceptVal = self.ackVals[highestBallotIndex]
+				highestAcceptNumIndex = self.incomingAcceptNums.index(max(self.incomingAcceptNums))
+				self.acceptVal = self.ackAcceptVals[highestAcceptNumIndex]
 
-			# SEND TO ALL OTHER PRMS
 			for sock in self.socketsToPaxos:
 				if sock == None:
 					continue
 
-				sock.sendall(("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal)).encode())
+				#0			1 				2				3
+				#accept 	ballotNum[0]	ballotNum[1]	acceptVal
+				outMessage = ("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal))
+				sock.sendall(outMessage.encode())
 
 
-	def accepted(self, incomingBallotNum, incomingAcceptedValue):	#RENAME VARIABLE
+	def accepted(self, incomingBallotNum, incomingAcceptVal):
+		# If incomingBallotNum does not meet condition, do nothing
+		# CHECK LOGIC, IF THIS IS A WORKING CHECK STATEMENT
+		if incomingBallotNum[0] <= self.ballotNum[0]:
+			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
+				return
+
+		self.acceptNum = incomingBallotNum
+		self.acceptVal = incomingAcceptVal
+
+		if self.isFirstAccept:
+			self.isFirstAccept = False
+
+			for sock in self.socketsToPaxos:
+				if sock == None:
+					continue
+
+				# 0			1				2				3
+				# accept	acceptNum[0]	acceptNum[1]	acceptVal
+				msg = "accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
+				sock.sendall((msg).encode())
 		
-		# CHECK IF ACCEPTINGNUM >= PREVIOUS ACCEPTNUM
-		checkStatement = (incomingBallotNum[0] > self.ballotNum[0]) or \
-				(incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] > self.ballotNum[1])
-
-		if checkStatement:
-			self.acceptNum = incomingBallotNum
-			self.acceptVal = incomingAcceptedValue
-			if self.isFirstAccept:
-				for sock in self.socketsToPaxos:
-					if sock == None:
-						continue
-					# 0			1			2			3
-					# accept	accept1		accept2		acceptVal
-					msg = "accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
-					sock.sendall((msg).encode())
-				self.isFirstAccept = False
-			
-			self.numAcceptsReceived += 1
-			if self.numAcceptsReceived >= self.minMajority:
-				# put it into the log
-				pass
+		self.numAcceptsReceived += 1
+		if self.numAcceptsReceived >= self.minMajority:
+			# PUT IT IN THE LOG
+			pass
 
 	def stop(self):
 		print("Stop Called")
@@ -139,24 +144,30 @@ class Paxos(object):
 
 
 	def processMessage(self, inMessage):
-		#processMessaageprocessMessage MESSAGE
 		inMessage = inMessage.split(" ")
 
 		if inMessage[0] == "prepare":
 			if self.isActive:
-				self.acknowledge(inMessage[1], inMessage[2])
+				incomingBallotNum = (inMessage[1], inMessage[2])
+				self.acknowledge(incomingBallotNum)
 
 		elif inMessage[0] == "ack":
 			if self.isActive:
-				self.accept(inMessage[5], inMessage[1])
+				incomingBallotNum = (inMessage[1], inMessage[2])
+				incomingAcceptNum = (inMessage[3], inMessage[4])
+				incomingAcceptVal = inMessage[5]
+				self.accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
 		
 		elif inMessage[0] == "accept":
 			if self.isActive:
-				pass
-				# self.accepted(incomingBallotNum, incomingAcceptedValue)
+				incomingBallotNum = (inMessage[1], inMessage[2])
+				incomingAcceptVal = inMessage[3]
+				self.accepted(incomingBallotNum, incomingAcceptVal)
 
 		elif inMessage[0] == "replicate":
 			if self.isActive:
+				# INMESSAG[1] IS A FILE NAME, NEED TO GET CONTENTS FROM FILE AND PUT INTO PROPOSAL
+				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
 				self.myProposal = inMessage[1]
 				self.prepare()
 
@@ -165,13 +176,13 @@ class Paxos(object):
 
 		elif inMessage[0] == "resume":
 			self.resume()
-		#ELIF MORE POSSIBLE CASES
+
 		else:
 			print(" --- ERROR, should never reach here --- ")
 
 
 	def receiveMessages(self):
-		# We know this is receiving correctly - ITS BEEN TESTED
+		# We know this is receiving correctly - IT'S BEEN TESTED
 		for stream in self.incomeStreams:
 			stream.settimeout(1)
 			try:
@@ -225,11 +236,12 @@ class Paxos(object):
 		self.numVotes = 0
 		self.numAcceptsReceived = 0
 
-		self.incomingBallotNums = []
-		self.ackVals = []
+		self.incomingAcceptNums = []
+		self.ackAcceptVals = []
 
-		self.hasMajority = False
+		self.hasMajorityPromises = False
 		self.isFirstAccept = True
+		
 
 ############################ END PAXOS CLASS ##############################
 
