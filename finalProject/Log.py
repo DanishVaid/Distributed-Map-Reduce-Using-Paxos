@@ -2,8 +2,8 @@
 class Log():	# MAY NOT NEED THIS CLASS
 
 	def __init__(self):
-		self.fileNames = []		# List of files names
-		self.dictionaries = []	# List of dictionaries
+		self.fileNames = [None]		# List of files names, indexes start at 1
+		self.dictionaries = [None]	# List of dictionaries, indexes start at 1
 
 		self.logFile = "tempLogFile.txt"
 
@@ -25,7 +25,7 @@ class Log():	# MAY NOT NEED THIS CLASS
 	def toString(self):					# FileName1=Key:Val,Key:Val, . . .\n
 		finalString = ""				# FileName2=Key:Val,Key:Val, . . . \n ...
 
-		for i in range(len(self.fileNames)):
+		for i in range(1, len(self.fileNames)):
 			finalString += str(self.fileNames[i])
 			finalString += "="
 			formatBool = True
@@ -39,7 +39,28 @@ class Log():	# MAY NOT NEED THIS CLASS
 			finalString += "\n"
 
 		return finalString
+
 	
+	def indexToString(self, index):
+		if index == 0 or index >= len(self.fileNames):
+			print("--- ERROR: Can not print index", index, "for log object")
+			return
+
+		finalString = str(self.fileNames[index])
+		finalString += "="
+		formatBool = True
+		for key in self.dictionaries[index]:
+			if formatBool:
+				formatBool = False
+			else:
+				finalString += ","
+			temp = str(key) + ":" + str(self.dictionaries[index][key])
+			finalString += temp
+		finalString += "\n"
+
+		return finalString
+
+
 
 # Static Method - Makes a log object from string
 def buildLogFromString(inputString):
@@ -73,6 +94,8 @@ def buildLogFromString(inputString):
 # 	print("Now Rebuilding and printing")
 # 	tempObj = buildLogFromString(inStringFormat)
 # 	print(tempObj.toString())
+# 	print("Now Printing index 1: ")
+# 	print(tempObj.indexToString(1))
 # 	print("\nAnd indivisual parts just to be sure: ")
 # 	print("    ", tempObj.fileNames)
 # 	print("    ", tempObj.dictionaries)
