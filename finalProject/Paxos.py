@@ -44,7 +44,7 @@ class Paxos(object):
 	def prepare(self):
 		# CHECK IF I'M LEADER
 
-		self.myProposal = self.log.getSize()
+		# self.myProposal = self.log.getSize()
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
 
@@ -73,7 +73,7 @@ class Paxos(object):
 		self.socketsToPaxos[incomingBallotNum[1]].sendall((outMessage).encode())
 		
 		
-	def accept(self, incomingBallotNum, incomingAccepNum, incomingAcceptVal):
+	def accept(self, incomingBallotNum, incomingAcceptNum, incomingAcceptVal):
 		if self.hasMajorityPromises:	# Check to make sure you don't start again
 			return
 
@@ -131,7 +131,8 @@ class Paxos(object):
 		self.numAcceptsReceived += 1
 		if self.numAcceptsReceived >= self.minMajority:
 			# PUT IT IN THE LOG
-			pass
+			print("Accepted", self.acceptVal)
+
 
 	def stop(self):
 		print("Stop Called")
@@ -148,19 +149,19 @@ class Paxos(object):
 
 		if inMessage[0] == "prepare":
 			if self.isActive:
-				incomingBallotNum = (inMessage[1], inMessage[2])
+				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
 				self.acknowledge(incomingBallotNum)
 
 		elif inMessage[0] == "ack":
 			if self.isActive:
-				incomingBallotNum = (inMessage[1], inMessage[2])
-				incomingAcceptNum = (inMessage[3], inMessage[4])
+				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
+				incomingAcceptNum = (int(inMessage[3]), int(inMessage[4]))
 				incomingAcceptVal = inMessage[5]
 				self.accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
 		
 		elif inMessage[0] == "accept":
 			if self.isActive:
-				incomingBallotNum = (inMessage[1], inMessage[2])
+				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
 				incomingAcceptVal = inMessage[3]
 				self.accepted(incomingBallotNum, incomingAcceptVal)
 
@@ -169,6 +170,7 @@ class Paxos(object):
 				# INMESSAG[1] IS A FILE NAME, NEED TO GET CONTENTS FROM FILE AND PUT INTO PROPOSAL
 				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
 				self.myProposal = inMessage[1]
+				print("My Proposal:", self.myProposal)
 				self.prepare()
 
 		elif inMessage[0] == "stop":
@@ -197,16 +199,18 @@ class Paxos(object):
 
 	def makeConnections(self):
 		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
-
+		sleep(5)
 		for i in range(1, len(self.ipAddrs)):
 			IP = self.ipAddrs[i]
 			port = self.ports[i]
 
 			# Other Paxos Sockets
 			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
+		
+		# To let other programs create their sockets
+		sleep(5)
+		for i in range(len(self.ipAddrs)):
 			self.incomeStreams.append(Connection.openConnection(self.mySock))
-
-		self.incomeStreams.append(Connection.openConnection(self.mySock))
 		print("--- ALL CONNECTIONS MADE ---")
 
 
@@ -253,7 +257,7 @@ def main():
 		print("--- ERROR : Please provide the site ID and config file ---\n")
 		exit(1)
 
-	mainPaxos = Paxos(sys.argv[1], sys.argv[2])
+	mainPaxos = Paxos(int(sys.argv[1]), sys.argv[2])
 	mainPaxos.config()
 
 	print(str(mainPaxos.ipAddrs))
