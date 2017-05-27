@@ -18,7 +18,7 @@ class Log():	# MAY NOT NEED THIS CLASS
 			f.write(self.toString())
 
 
-	def size(self):
+	def getSize(self):
 		return len(self.fileNames)
 	
 

@@ -29,6 +29,7 @@ def createAcceptSocket(IP, port):
 
 	try:
 		address = (IP, port)
+		sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 		sock.bind(address)
 		sock.listen(10)
 

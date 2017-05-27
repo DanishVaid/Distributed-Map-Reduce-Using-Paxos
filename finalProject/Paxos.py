@@ -38,15 +38,15 @@ class Paxos(object):
 		self.isFirstAccept = True
 
 		self.mySock = None
-		self.incomeStream = None
+		self.incomeStreams = []
 		self.socketsToPaxos = [None]	# Make the first element None
 
 	def prepare(self):
 		# Check if i am leader -- TO DO
 
-		self.myProposal = len(self.log)
+		self.myProposal = self.log.getSize()
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
-		outMessage = "prepare " + self.ballotNum[0] + " " + self.ballotNum[1]
+		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
 
 		#SEND TO ALL OTHER PRMS
 		for sock in self.socketsToPaxos:
@@ -129,10 +129,12 @@ class Paxos(object):
 				pass
 
 	def stop(self):
+		print("Stop Called")
 		self.isActive = False
 
 
 	def resume(self):
+		print("Resume Called")
 		self.isActive = True
 
 
@@ -169,15 +171,17 @@ class Paxos(object):
 
 
 	def receiveMessages(self):
-		try:
-			self.incomeStream.settimeout(1)
+		# We know this is receiving correctly - ITS BEEN TESTED
+		for stream in self.incomeStreams:
+			stream.settimeout(1)
+			try:
+				data = stream.recv(1024).decode()
+				if len(data) > 0:
+					print(data)
+					self.processMessage(data)
 
-			data = self.incomeStream.recv(1024)
-			if len(data) > 0:
-				self.processMessage(data)
-
-		except socket.timeout:
-			pass
+			except socket.timeout:
+				continue
 	
 
 	def makeConnections(self):
@@ -189,9 +193,9 @@ class Paxos(object):
 
 			# Other Paxos Sockets
 			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
+			self.incomeStreams.append(Connection.openConnection(self.mySock))
 
-		self.incomeStream = Connection.openConnection(self.mySock)
-
+		self.incomeStreams.append(Connection.openConnection(self.mySock))
 		print("--- ALL CONNECTIONS MADE ---")
 
 
@@ -245,9 +249,12 @@ def main():
 
 	mainPaxos.makeConnections()
 
+	print(str(mainPaxos.incomeStreams))
+	print(str(mainPaxos.socketsToPaxos))
+
 	while True:
 		mainPaxos.receiveMessages()
-		sleep(.2)
+		# sleep(.2)
 
 	mainPaxos.closeConnections()	#MAKE CONDITION TO EXIT INFINITE LOOP
 

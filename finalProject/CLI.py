@@ -1,12 +1,14 @@
 #!/bin/python3
 
+import sys
 import Query
 import Connection
 
 class CLI(object):
 	
-	def __init__(self, configFile):
+	def __init__(self, ID, configFile):
 		self.configFile = configFile	#File name of config file for CLI
+		self.ID = ID
 
 		self.mapper1Port = None			#Port number to other processes in same node
 		self.mapper2Port = None
@@ -53,8 +55,11 @@ class CLI(object):
 			elif command == "replicate":	#part1
 				self.sockToPaxos.sendall(("replicate " + str(args[0])).encode())
 			elif command == "stop":			#part1
+				print("Sending Stop")
+				print(self.sockToPaxos)
 				self.sockToPaxos.sendall(("stop").encode())
 			elif command == "resume":		#part1
+				print("Sending Resume")
 				self.sockToPaxos.sendall(("resume").encode())
 			elif command == "total":		#part1
 				Query.total(args[0], args[1])
@@ -69,16 +74,9 @@ class CLI(object):
 
 
 	def config(self):
-		# f = open(self.configFile, 'r')
-
-		# for line in f:
-		# 	#do something
-
-		# #READ FROM CONFIG FILE FOR IP/PORT OF PROCESSES IN NODE
-
-		# #INITIALIZE CONNECTIONS WITH CONNECTION OBJECT
-
-		self.paxosPort = 5005
+		f = open(self.configFile, 'r')
+		lines = f.readlines()
+		self.paxosPort = int(lines[self.ID - 1])
 
 
 	def makeConnections(self):
@@ -99,7 +97,11 @@ class CLI(object):
 ############################ END CLI CLASS ##############################
 
 def main():
-	client = CLI("nonexistent.txt")
+	if(len(sys.argv) != 3):
+		print("--- ERROR: Please pass in ID and config file ---")
+		exit(1)
+
+	client = CLI(int(sys.argv[1]), sys.argv[2])
 
 	client.config()
 	client.makeConnections()
