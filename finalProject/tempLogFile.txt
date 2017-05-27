@@ -1,2 +1,2 @@
-file1=key2:value2,randkey:randval,key1:value1
-file2=key3:value3,randkey:randval,key4:value4
+file1=key1:value1,randkey:randval,key2:value2
+file2=key4:value4,randkey:randval,key3:value3
