@@ -226,7 +226,7 @@ class snapshot(object):
     def printOutput(self):
         result = self.snapshotName + ": " + str(self.localBalance)
         for i in range(1, len(self.amtList)):
-            if self.amtList[i] and i != self.channelID:
+            if self.amtList[i] != None and i != self.channelID:
                 result += " " + str(self.amtList[i])
         print(result)
 
