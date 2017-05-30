@@ -1,2 +1,8 @@
-file1=key1:value1,randkey:randval,key2:value2
-file2=key4:value4,randkey:randval,key3:value3
+file1=key1:value1,key2:value2,randkey:randval
+file2=key3:value3,key4:value4,randkey:randval
+insertfile1=keyinsert1:valueinsert1,key2:value2
+None
+None
+None
+None
+insertfile2=keyinsert2:valueinsert2,key5:value5
