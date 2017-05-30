@@ -17,6 +17,9 @@ class Log():	# MAY NOT NEED THIS CLASS
 			f.truncate()
 			f.write(self.toString())
 
+	def insertAtIndex(self, index, file, assocDict):
+		while(index > len(fileNames))
+
 
 	def getSize(self):
 		return len(self.fileNames)

@@ -4,6 +4,7 @@ import socket
 import sys				# For command line arguments
 import Connection		# Makes the Sockets
 import Log				# Our Log Class
+import queue			# Queue for messages
 from math import floor
 from time import sleep
 
@@ -11,6 +12,7 @@ class Paxos(object):
 	
 	def __init__(self, selfID, configFile):
 		self.selfID = selfID
+		self.msgQueue = queue.Queue()
 
 		self.isActive = True				# Used for resume/stop message from the CLI
 		self.isLeader = False				# CURRENTLY NOT USED
@@ -41,10 +43,17 @@ class Paxos(object):
 		self.incomeStreams = []				# Gather all the streams to check for messages
 		self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
 
-	def prepare(self):
+	def prepare(self, myProposal):
 		print("---START PREPARE---")
 		# CHECK IF I'M LEADER
 
+		for i in range(len(self.socketsToPaxos)):
+			if self.socketsToPaxos[i] == None or i == self.selfID:
+				continue
+			self.socketsToPaxos[i].sendall(("reset%").encode())
+		self.reset()
+
+		self.myProposal = myProposal;
 		# self.myProposal = self.log.getSize()
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
@@ -54,7 +63,7 @@ class Paxos(object):
 				continue
 
 			print("Send prepare from site ID: " + str(self.selfID))
-			sock.sendall(outMessage.encode())
+			sock.sendall((outMessage + "%").encode())
 
 		print("---END PREPARE---")
 
@@ -77,7 +86,7 @@ class Paxos(object):
 		# ack	incBallotNum[0]		incBallotNum[1]		acceptNum[0]	acceptNum[1]	acceptVal
 		outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
 		print("Send ack back to siteID (" + str(incomingBallotNum[1]) + ") from own siteID: " + str(self.selfID))
-		self.socketsToPaxos[incomingBallotNum[1]].sendall((outMessage).encode())
+		self.socketsToPaxos[incomingBallotNum[1]].sendall((outMessage + "%").encode())
 
 		print("---END ACKNOWLEDGE---")
 		
@@ -95,13 +104,13 @@ class Paxos(object):
 
 		if self.numPromises >= self.minMajority:
 			print("Have majority now. This message should not be printed more than once.")
-			print("ackAcceptVals contains: " + str(ackAcceptVals))
-			print("incomingAcceptNums contains: " + str(incomingAcceptNums))
+			print("ackAcceptVals contains: " + str(self.ackAcceptVals))
+			print("incomingAcceptNums contains: " + str(self.incomingAcceptNums))
 			self.hasMajorityPromises = True
 			hasReceivedNoOtherValues = True
 
 			for i in self.ackAcceptVals:
-				if i != None:
+				if i != str(None):
 					print("Set hasReceivedNoOtherValues to false.")
 					hasReceivedNoOtherValues = False
 
@@ -120,7 +129,7 @@ class Paxos(object):
 				#0			1 				2				3
 				#accept 	ballotNum[0]	ballotNum[1]	acceptVal
 				outMessage = ("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal))
-				sock.sendall(outMessage.encode())
+				sock.sendall((outMessage + "%").encode())
 
 			print("---END ACCEPT---")
 
@@ -148,11 +157,12 @@ class Paxos(object):
 				# 0			1				2				3
 				# accept	acceptNum[0]	acceptNum[1]	acceptVal
 				msg = "accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
-				sock.sendall((msg).encode())
+				sock.sendall((msg + "%").encode())
 		
 		self.numAcceptsReceived += 1
 		if self.numAcceptsReceived >= self.minMajority:
 			# PUT IT IN THE LOG
+
 			print("Accepted", self.acceptVal)
 
 		print("---END ACCEPTED---")
@@ -193,15 +203,19 @@ class Paxos(object):
 			if self.isActive:
 				# INMESSAG[1] IS A FILE NAME, NEED TO GET CONTENTS FROM FILE AND PUT INTO PROPOSAL
 				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
-				self.myProposal = inMessage[1]
-				print("My Proposal:", self.myProposal)
-				self.prepare()
+
+				myProposal = inMessage[1]
+				print("My Proposal:", myProposal)
+				self.prepare(myProposal)
 
 		elif inMessage[0] == "stop":
 			self.stop()
 
 		elif inMessage[0] == "resume":
 			self.resume()
+
+		elif inMessage[0] == "reset":
+			self.reset()
 
 		else:
 			print(" --- ERROR, should never reach here --- ")
@@ -214,8 +228,12 @@ class Paxos(object):
 			try:
 				data = stream.recv(1024).decode()
 				if len(data) > 0:
+					if data[-1] == "%":
+						data = data[:-1]
+					data = data.split("%")
 					print(data)
-					self.processMessage(data)
+					for i in data:
+						self.processMessage(i)
 
 			except socket.timeout:
 				continue
@@ -256,9 +274,12 @@ class Paxos(object):
 
 
 	def reset(self):
-		self.ballotNum = (0, 0)
+		print("Resetting")
+
+		# Reset ballotNum[0] to be log size
+		#self.ballotNum = (0, 0)
 		self.acceptNum = (0, 0)
-		self.acceptVal = 0
+		self.acceptVal = None
 
 		self.numPromises = 0
 		self.numVotes = 0

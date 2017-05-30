@@ -53,14 +53,14 @@ class CLI(object):
 				pass				# Not needed for part 1
 				#SEND MESSAGE TO REDUCER
 			elif command == "replicate":	#part1
-				self.sockToPaxos.sendall(("replicate " + str(args[0])).encode())
+				self.sockToPaxos.sendall(("replicate " + str(args[0]) + "%" ).encode())
 			elif command == "stop":			#part1
 				print("Sending Stop")
 				print(self.sockToPaxos)
-				self.sockToPaxos.sendall(("stop").encode())
+				self.sockToPaxos.sendall(("stop%").encode())
 			elif command == "resume":		#part1
 				print("Sending Resume")
-				self.sockToPaxos.sendall(("resume").encode())
+				self.sockToPaxos.sendall(("resume%").encode())
 			elif command == "total":		#part1
 				Query.total(args[0], args[1])
 			elif command == "print":		#part1
