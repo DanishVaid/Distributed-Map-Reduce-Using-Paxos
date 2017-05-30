@@ -22,7 +22,7 @@ class Reducer():
 				word = line[0]
 				count = line[1]
 
-				self.conjoinedDict[word] = wordCounts.get(word, count) + count 	#CHECK SYNTAX
+				self.conjoinedDict[word] = conjoinedDict.get(word, count) + count 	#CHECK SYNTAX
 																				#CHECK INSTRUCTIONS
 																				#"IF A WORD IS NOT IN THE DICTIONARY, IT IS INSERTED
 																				#WITH A COUNT OF 1 IN ITS FIRST OCCURENCE"
