@@ -84,7 +84,7 @@ class CLI(object):
 				print("Checking messages/status")
 				continue
 			elif command == "total":		#part1
-				Query.total(args[0], args[1])
+				Query.total(args[0])
 			elif command == "print":		#part1
 				Query.printFileNames()
 			elif command == "merge":		#part1
