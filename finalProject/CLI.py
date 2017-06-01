@@ -3,6 +3,8 @@
 import sys
 import Query
 import Connection
+import socket
+from time import sleep
 
 class CLI(object):
 	
@@ -19,6 +21,7 @@ class CLI(object):
 		self.sockToMapper2 = None
 		self.sockToReducer = None
 		self.sockToPaxos = None
+		self.incomingStream = []
 
 
 	def takeCommand(self):
@@ -29,6 +32,7 @@ class CLI(object):
 		print("replicate\tfilename")
 		print("stop")
 		print("resume")
+		print("status")
 		print("")
 
 		print("List of data query commands:")
@@ -38,6 +42,21 @@ class CLI(object):
 		print("")
 
 		while True:
+			temp = 0
+			for stream in self.incomingStream:
+				stream.settimeout(1)
+				try:
+					data = stream.recv(1024).decode()
+					if len(data) > 0:
+						if data[-1] == "%":
+							data = data[:-1]
+						data = data.split("%")
+						print(data)
+
+				except socket.timeout:
+					print("No message received for stream", temp)
+					temp = temp + 1
+
 			consoleInput = input("Command (enter 'exit' to quit):")
 			consoleInput = consoleInput.split(" ")
 
@@ -61,12 +80,21 @@ class CLI(object):
 			elif command == "resume":		#part1
 				print("Sending Resume")
 				self.sockToPaxos.sendall(("resume%").encode())
+			elif command == "status":
+				print("Checking messages/status")
+				continue
 			elif command == "total":		#part1
 				Query.total(args[0], args[1])
 			elif command == "print":		#part1
 				Query.printFileNames()
 			elif command == "merge":		#part1
 				Query.merge(args[0], args[1])
+
+			
+			elif command == "maptest":
+				self.sockToMapper1.sendall(("messagesSent%").encode())
+
+
 			else:
 				print("Not a recognizable command")
 
@@ -80,12 +108,19 @@ class CLI(object):
 
 
 	def makeConnections(self):
+		incomingSock = Connection.createAcceptSocket("127.0.0.1", 5001)
+		sleep(5)
+
 		#SHOULD HAVE OUTGOING CONNECTIONS TO MAP1, MAP2, REDUCE, AND PAXOS
 		# self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
 		# self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
 		# self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerport)
 		self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
+		self.sockToMapper1 = Connection.createConnectSocket("127.0.0.1", 6001)
+		sleep(5)
 
+		for i in range(2):
+			self.incomingStream.append(Connection.openConnection(incomingSock))
 
 	def closeConnections(self):
 		# Connection.closeSocket(self.sockToMapper1)

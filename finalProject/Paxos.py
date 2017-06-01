@@ -42,6 +42,7 @@ class Paxos(object):
 		self.mySock = None					# Socket for incoming messages
 		self.incomeStreams = []				# Gather all the streams to check for messages
 		self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
+		self.sockToClient = None
 
 	def prepare(self, myProposal):
 		print("---START PREPARE---")
@@ -209,6 +210,7 @@ class Paxos(object):
 				self.prepare(myProposal)
 
 		elif inMessage[0] == "stop":
+			self.sockToClient.sendall(("Paxos got stop%").encode())
 			self.stop()
 
 		elif inMessage[0] == "resume":
@@ -242,6 +244,8 @@ class Paxos(object):
 	def makeConnections(self):
 		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
 		sleep(5)
+
+		self.sockToClient = Connection.createConnectSocket("127.0.0.1", 5001)
 		for i in range(1, len(self.ipAddrs)):
 			IP = self.ipAddrs[i]
 			port = self.ports[i]
