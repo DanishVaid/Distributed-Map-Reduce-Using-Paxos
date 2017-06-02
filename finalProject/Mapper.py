@@ -17,18 +17,38 @@ class Mapper(object):
 
 
 	def map(self, fileName, offset, size):
-		f = open(fileName, 'r')
+		print("filename offset size", fileName, offset, size)
+		currLookedAt = 0
+		with open(fileName, "r") as f:
+			# lines = f.readlines()
+			# totalString = ""
+			# for line in lines:
+			# 	if currLookedAt > size:
+			# 		break
 
-		for line in f:
-			words = line.split(" ") #CHECK DELIMITERS, RE-FORMAT?
+			# 	currLookedAt += len(line)
+			# 	totalString = totalString + line + " "
+			
+			# print("Initial total string:", totalString)
+			# totalString = totalString[:size]
+			# print("Broken total string:", totalString)
 
+			lines = f.readlines()
+			totalString = ""
+			for line in lines:
+				totalString = totalString + line + " "
+			print("Intial total string:", totalString)
+			totalString = totalString[offset:(offset + size + 1)]
+			print("Broken total string:", totalString)
+
+			words = totalString.split()
 			for word in words:
-				self.wordCounts[word] = wordCounts.get(word, 0) + 1
-
-		f.close()
+				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1
+			print("Dictionary:", self.wordCounts)
 
 		outputFileName = str(fileName) + "_I_" + str(self.ID) + ".txt"
 		self.writeToFile(outputFileName)
+		print("Finished Writing to file:", outputFileName)
 
 
 	def writeToFile(self, outputFileName):
@@ -75,12 +95,12 @@ class Mapper(object):
 					for message in data:
 						if message == "Close":
 							return
-
+						
 						fileName = message.split(" ")[0]
-						offset = message.split(" ")[1]
-						size = message.split(" ")[2]
+						offset = int(message.split(" ")[1])
+						size = int(message.split(" ")[2])
 
-						self.map(message, offset, size)
+						self.map(fileName, offset, size)
 
 			except socket.timeout:
 				pass

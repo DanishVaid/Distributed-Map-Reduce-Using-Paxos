@@ -55,9 +55,16 @@ class CLI(object):
 			if command == "exit":
 				break
 
-			elif command == "map":
-				pass				# Not needed for part 1
-				#SEND MESSAGE TO BOTH MAPPERS
+			elif command == "map":		# Send message to mappers
+				print("Mapping File")
+				filenameToMapper = args[0]
+				offset1, size1, offset2, size2 = getMappingProperties(filenameToMapper)
+				msgToMapper1 = filenameToMapper + " " + str(offset1) + " " + str(size1) + "%"
+				msgToMapper2 = filenameToMapper + " " + str(offset2) + " " + str(size2) + "%"
+				self.sockToMapper1.sendall((msgToMapper1).encode())
+				self.sockToMapper2.sendall((msgToMapper2).encode())
+				print("Mapping message sent")
+
 
 			elif command == "reduce":
 				pass				# Not needed for part 1
@@ -112,22 +119,22 @@ class CLI(object):
 
 		sleep(5)
 
-		# self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
-		# self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
-		# self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerPort)
-		self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
+		self.sockToMapper1 = Connection.createConnectSocket("127.0.0.1", self.mapper1Port)
+		self.sockToMapper2 = Connection.createConnectSocket("127.0.0.1", self.mapper2Port)
+		# self.sockToReducer = Connection.createConnectSocket("127.0.0.1", self.reducerPort)
+		# self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
 
 		sleep(5)
 
-		for i in range(1):
+		for i in range(2):
 			self.incomingStream.append(Connection.openConnection(incomingSock))
 
 
 	def closeConnections(self):
-		# Connection.closeSocket(self.sockToMapper1)
-		# Connection.closeSocket(self.sockToMapper2)
-		# Connection.closeSocket(self.sockToReducer)
 		Connection.closeSocket(self.sockToPaxos)
+		Connection.closeSocket(self.sockToMapper1)
+		Connection.closeSocket(self.sockToMapper2)
+		Connection.closeSocket(self.sockToReducer)
 
 
 	def receiveMessages(self):
@@ -148,6 +155,34 @@ class CLI(object):
 
 
 ############################ END CLI CLASS ##############################
+
+def getMappingProperties(filenameToMapper):
+	offset1 = 0
+	offset2 = 0
+	size1 = 0
+	size2 = 0
+
+	with open(filenameToMapper, "r") as f:
+		lines = f.readlines()
+
+		totalFile = ""
+		numChars = 0
+		for line in lines:
+			numChars += len(line)
+			totalFile = totalFile + line + " "
+		
+		size1 = int(numChars / 2)
+		while True:
+			if totalFile[size1] != " ":
+				size1 += 1
+			else:
+				break
+		
+		size2 = numChars - size1
+		offset2 = size1
+
+		return offset1, size1, offset2, size2
+		
 
 def main():
 	if(len(sys.argv) != 2):
