@@ -243,6 +243,7 @@ class Paxos(object):
 
 	def makeConnections(self):
 		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
+		sockFromCLI = Connection.createAcceptSocket("127.0.0.1", 5005)
 		sleep(5)
 
 		self.sockToClient = Connection.createConnectSocket("127.0.0.1", 5001)
@@ -255,7 +256,7 @@ class Paxos(object):
 		
 		# To let other programs create their sockets
 		sleep(5)
-		for i in range(len(self.ipAddrs)):
+		for i in range(len(self.ipAddrs) + 1):				# +1 for socket from CLI
 			self.incomeStreams.append(Connection.openConnection(self.mySock))
 		print("--- ALL CONNECTIONS MADE ---")
 
