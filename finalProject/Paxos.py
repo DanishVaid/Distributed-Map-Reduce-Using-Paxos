@@ -1,18 +1,18 @@
 #!/bin/python3
 
-import socket
+import socket 			# To create network connection
 import sys				# For command line arguments
 import Connection		# Makes the Sockets
 import Log				# Our Log Class
 import queue			# Queue for messages
-from math import floor
-from time import sleep
+from math import floor	# Helps calculate minMajority
+from time import sleep	# Allows for creating sockets in the correct order
 
 class Paxos(object):
 	
 	def __init__(self, selfID, configFile):
-		self.selfID = selfID
-		self.msgQueue = queue.Queue()
+		self.selfID = selfID 				# Index of IP/port pair in config file
+		self.msgQueue = queue.Queue()		# Gathers messages, helps when two messages get combined
 
 		self.isActive = True				# Used for resume/stop message from the CLI
 		self.isLeader = False				# CURRENTLY NOT USED
@@ -44,9 +44,8 @@ class Paxos(object):
 		self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
 		self.sockToClient = None
 
-	def prepare(self, myProposal):
+	def prepare(self, fileName):
 		print("---START PREPARE---")
-		# CHECK IF I'M LEADER
 
 		for i in range(len(self.socketsToPaxos)):
 			if self.socketsToPaxos[i] == None or i == self.selfID:
@@ -54,9 +53,10 @@ class Paxos(object):
 			self.socketsToPaxos[i].sendall(("reset%").encode())
 		self.reset()
 
-		self.myProposal = myProposal;
-		# self.myProposal = self.log.getSize()
-		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
+		self.myProposal = self.buildLogEntryFromFile(fileName)
+
+
+		self.ballotNum = (log.getSize(), self.selfID)	#DOUBLE CHECK LOGIC
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
 
 		for sock in self.socketsToPaxos:
@@ -71,11 +71,8 @@ class Paxos(object):
 
 	def acknowledge(self, incomingBallotNum):
 		print("---START ACKNOWLEDGE---")
-		# incomingBallotNum[0] = Sender's ballot number
-		# incomingBallotNum[1] = Sender's ID
 
 		# If incomingBallotNum does not meet condition, do nothing
-		# CHECK LOGIC, IF THIS IS A WORKING CHECK STATEMENT
 		if incomingBallotNum[0] <= self.ballotNum[0]:
 			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
 				print("Prepare rejected.")
@@ -137,8 +134,8 @@ class Paxos(object):
 
 	def accepted(self, incomingBallotNum, incomingAcceptVal):
 		print("---START ACCEPTED---")
+
 		# If incomingBallotNum does not meet condition, do nothing
-		# CHECK LOGIC, IF THIS IS A WORKING CHECK STATEMENT
 		if incomingBallotNum[0] <= self.ballotNum[0]:
 			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
 				print("Accept rejected.")
@@ -162,7 +159,7 @@ class Paxos(object):
 		
 		self.numAcceptsReceived += 1
 		if self.numAcceptsReceived >= self.minMajority:
-			# PUT IT IN THE LOG
+			log.insertAtIndex(self.acceptNum[0], self.acceptVal)
 
 			print("Accepted", self.acceptVal)
 
@@ -205,9 +202,9 @@ class Paxos(object):
 				# INMESSAG[1] IS A FILE NAME, NEED TO GET CONTENTS FROM FILE AND PUT INTO PROPOSAL
 				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
 
-				myProposal = inMessage[1]
-				print("My Proposal:", myProposal)
-				self.prepare(myProposal)
+				fileName = inMessage[1]
+				print("File to be replicated:", myProposal)
+				self.prepare(failName)
 
 		elif inMessage[0] == "stop":
 			self.sockToClient.sendall(("Paxos got stop%").encode())
@@ -277,6 +274,22 @@ class Paxos(object):
 			self.ports.append(line[1])
 
 		self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
+
+
+	def buildLogEntryFromFile(self, fileName):
+		f = open(fileName, 'r')
+		lines = f.readlines()
+
+		logEntry = fileName + "="
+		for line in lines:
+			key = line.split(" ")[0]
+			value = line.split(" ")[1]
+
+			logEntry += key + "." + value + ","
+
+		logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
+
+		return logEntry
 
 
 	def reset(self):
