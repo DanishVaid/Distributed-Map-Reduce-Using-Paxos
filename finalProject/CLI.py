@@ -44,7 +44,7 @@ class CLI(object):
 		print("")
 
 		while True:
-			receiveMessages()
+			self.receiveMessages()
 
 			consoleInput = input("Command (enter 'exit' to quit):")
 			consoleInput = consoleInput.split(" ")
@@ -132,19 +132,18 @@ class CLI(object):
 
 	def receiveMessages(self):
 		numStream = 0
-			for stream in self.incomingStream:
-				stream.settimeout(1)
-				try:
-					data = stream.recv(1024).decode()
-					if len(data) > 0:
-						if data[-1] == "%":
-							data = data[:-1]
-						data = data.split("%")
-						print(data)
-
-				except socket.timeout:
-					print("No message received for stream", numStream)
-					numStream += 1
+		for stream in self.incomingStream:
+			stream.settimeout(1)
+			try:
+				data = stream.recv(1024).decode()
+				if len(data) > 0:
+					if data[-1] == "%":
+						data = data[:-1]
+					data = data.split("%")
+					print(data)
+			except socket.timeout:
+				print("No message received for stream", numStream)
+				numStream += 1
 
 
 
