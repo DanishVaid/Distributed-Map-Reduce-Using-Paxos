@@ -112,21 +112,21 @@ class CLI(object):
 
 		sleep(5)
 
-		self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
-		self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
-		self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerPort)
+		# self.sockToMapper1 = connection.createConnectSock("127.0.0.1", self.mapper1Port)
+		# self.sockToMapper2 = connection.createConnectSock("127.0.0.1", self.mapper2Port)
+		# self.sockToReducer = connection.createConnectSock("127.0.0.1", self.reducerPort)
 		self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
 
 		sleep(5)
 
-		for i in range(4):
+		for i in range(1):
 			self.incomingStream.append(Connection.openConnection(incomingSock))
 
 
 	def closeConnections(self):
-		Connection.closeSocket(self.sockToMapper1)
-		Connection.closeSocket(self.sockToMapper2)
-		Connection.closeSocket(self.sockToReducer)
+		# Connection.closeSocket(self.sockToMapper1)
+		# Connection.closeSocket(self.sockToMapper2)
+		# Connection.closeSocket(self.sockToReducer)
 		Connection.closeSocket(self.sockToPaxos)
 
 
