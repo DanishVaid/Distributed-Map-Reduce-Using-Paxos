@@ -256,8 +256,9 @@ class Paxos(object):
 		
 		# To let other programs create their sockets
 		sleep(5)
-		for i in range(len(self.ipAddrs) + 1):				# +1 for socket from CLI
+		for i in range(len(self.ipAddrs)):
 			self.incomeStreams.append(Connection.openConnection(self.mySock))
+		self.incomeStreams.append(Connection.openConnection(sockFromCLI))
 		print("--- ALL CONNECTIONS MADE ---")
 
 
