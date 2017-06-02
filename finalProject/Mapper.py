@@ -1,26 +1,23 @@
+import sys
+
 import Connection
 from time import sleep
 import socket
 
 class Mapper(object):
 
-	def __init__(self):
-		self.ID = None
-		self.port = None
-
-		self.fileName = None
-		self.offset = None
-		self.size = None
+	def __init__(self, ID, port):
+		self.ID = ID
+		self.port = port
 
 		self.wordCounts = {}
-		self.outputFileName = str(self.fileName) + "_I_" + str(self.ID) + ".txt"
 
 		self.socketToCLI = None
-		self.incomingStream = None
+		self.incomeStream = None
 
 
-	def map(self):
-		f = open(self.fileName, 'r')
+	def map(self, fileName, offset, size):
+		f = open(fileName, 'r')
 
 		for line in f:
 			words = line.split(" ") #CHECK DELIMITERS, RE-FORMAT?
@@ -28,56 +25,78 @@ class Mapper(object):
 			for word in words:
 				self.wordCounts[word] = wordCounts.get(word, 0) + 1
 
+		f.close()
 
-	def writeToFile(self):
+		outputFileName = str(fileName) + "_I_" + str(self.ID) + ".txt"
+		self.writeToFile(outputFileName)
+
+
+	def writeToFile(self, outputFileName):
 		f = open(outputFileName, 'w')
 
-		for key, value in wordCounts.items():
+		for key, value in self.wordCounts.items():
 			f.write(str(key) + " " + str(value) + "\n")
 
 		f.close()
 
 
 	def makeConnections(self):
-		incomingSock = Connection.createAcceptSocket("127.0.0.1", 6001)
+		incomeSock = Connection.createAcceptSocket("127.0.0.1", self.port)
+
 		sleep(5)
 
 		self.socketToCLI = Connection.createConnectSocket("127.0.0.1", 5001)
+
 		sleep(5)
 
-		self.incomingStream = Connection.openConnection(incomingSock)
+		self.incomeStream = Connection.openConnection(incomeSock)
 
 	
 	def closeConnections(self):
 		Connection.closeSocket(self.socketToCLI)
 
-	def takeCommands(self):
-		print("Mapper is taking commands")
+
+	def receiveMessages(self):
+		print("Mapper is receiving messages.")
+
 		while(True):
-			self.incomingStream.settimeout(1)
+			self.incomeStream.settimeout(1)
+
 			try:
-				data = self.incomingStream.recv(1024).decode()
+				data = self.incomeStream.recv(1024).decode()
+
 				if len(data) > 0:
 					if data[-1] == "%":
 						data = data[:-1]
+
 					data = data.split("%")
 					print(data)
-					for i in data:
-						if i == "messagesSent":
-							self.socketToCLI.sendall(("Message to CLI from Mapper%").encode())
+
+					for message in data:
+						if message == "Close":
+							return
+
+						fileName = message.split(" ")[0]
+						offset = message.split(" ")[1]
+						size = message.split(" ")[2]
+
+						self.map(message, offset, size)
 
 			except socket.timeout:
 				pass
 
 
-############################ END CLI CLASS ##############################
-def main():
-	
-	mapper = Mapper()
-	mapper.makeConnections()
-	mapper.takeCommands()
+############################ END MAPPER CLASS ##############################
 
+def main():
+	args = sys.argv
+
+	mapper = Mapper(args[1], args[2])	#ID, port
+	
+	mapper.makeConnections()
+	mapper.receiveMessages()
 	mapper.closeConnections()
+
 
 if __name__ == "__main__":
 	main()

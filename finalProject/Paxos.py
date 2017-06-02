@@ -274,7 +274,7 @@ class Paxos(object):
 			self.ipAddrs.append(line[0])
 			self.ports.append(line[1])
 
-		self.minMajority = floor(len(self.ipAddrs) / 2) + 1
+		self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
 
 
 	def reset(self):

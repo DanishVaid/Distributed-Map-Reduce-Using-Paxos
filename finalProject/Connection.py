@@ -5,8 +5,10 @@ def openConnection(acceptSock):
 	stream, clientAddress = acceptSock.accept()
 	return stream
 
+
 def closeSocket(sock):
 	sock.close()
+
 
 def createConnectSocket(IP, port):
 	port = int(port)
@@ -23,6 +25,7 @@ def createConnectSocket(IP, port):
 		createConnectSocket(IP, port)
 
 	return sock
+	
 
 def createAcceptSocket(IP, port):
 	port = int(port)
