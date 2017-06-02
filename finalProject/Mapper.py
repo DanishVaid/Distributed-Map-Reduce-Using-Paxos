@@ -38,6 +38,7 @@ class Mapper(object):
 			for line in lines:
 				totalString = totalString + line + " "
 			print("Intial total string:", totalString)
+			print("Size is:", size)
 			totalString = totalString[offset:(offset + size + 1)]
 			print("Broken total string:", totalString)
 
@@ -46,7 +47,13 @@ class Mapper(object):
 				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1
 			print("Dictionary:", self.wordCounts)
 
-		outputFileName = str(fileName) + "_I_" + str(self.ID) + ".txt"
+
+		try:
+			outputFileName = (fileName.split("."))[0] + "_I_" + str(self.ID) + "." + (fileName.split("."))[1]
+
+		except IndexError:
+			outputFileName = (fileName.split("."))[0] + "_I_" + str(self.ID)
+
 		self.writeToFile(outputFileName)
 		print("Finished Writing to file:", outputFileName)
 

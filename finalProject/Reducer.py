@@ -4,7 +4,7 @@ import socket
 
 class Reducer():
 	
-	def __init__(self, ID, fileNames):
+	def __init__(self):
 		self.conjoinedDict = {}
 
 		self.socketFromCLI = None
@@ -13,14 +13,18 @@ class Reducer():
 
 	def reduce(self, fileNames):
 		for fileName in fileNames:
-			f = open(fileName, 'r')
+			try:
+				f = open(fileName, 'r')
+			except FileNotFoundError:
+				print("--- File", fileName, "Not Found --- ")
+				return
 
 			for line in f:
 				line = line.split(" ")
 				word = line[0]
-				count = line[1]
+				count = int(line[1])
 
-				self.conjoinedDict[word] = conjoinedDict.get(word, count) + count 	#CHECK SYNTAX
+				self.conjoinedDict[word] = self.conjoinedDict.get(word, 0) + count 	#CHECK SYNTAX
 																				#CHECK INSTRUCTIONS
 																				#"IF A WORD IS NOT IN THE DICTIONARY, IT IS INSERTED
 																				#WITH A COUNT OF 1 IN ITS FIRST OCCURENCE"
@@ -29,21 +33,27 @@ class Reducer():
 			f.close()
 
 		originalFileName = str(fileNames[0].split("_")[0])
-		outputFileName = originalFileName + "_reduced.txt"
+
+		try:
+			outputFileName = (originalFileName.split("."))[0] + "_reduced" + "." + (fileNames[0].split("."))[1]
+
+		except IndexError:
+			outputFileName = (originalFileName.split("."))[0] + "_reduced"
+
 		self.writeToFile(outputFileName)
 		
 
 	def writeToFile(self, outputFileName):
 		f = open(outputFileName, 'w')
 
-		for key, value in conjoinedDict.items():
+		for key, value in self.conjoinedDict.items():
 			f.write(str(key) + " " + str(value) + "\n")
 
 		f.close()
 
 
 	def makeConnections(self):
-		incomeSock = Connection.createAcceptSocket("127.0.0.1", 5003)
+		incomeSock = Connection.createAcceptSocket("127.0.0.1", 5004)
 
 		sleep(5)
 
@@ -59,30 +69,30 @@ class Reducer():
 
 
 	def receiveMessages(self):
-	print("Reducer is receiving messages.")
+		print("Reducer is receiving messages.")
 
-	while(True):
-		self.incomeStream.settimeout(1)
+		while(True):
+			self.incomeStream.settimeout(1)
 
-		try:
-			data = self.incomeStream.recv(1024).decode()
+			try:
+				data = self.incomeStream.recv(1024).decode()
 
-			if len(data) > 0:
-				if data[-1] == "%":
-					data = data[:-1]
+				if len(data) > 0:
+					if data[-1] == "%":
+						data = data[:-1]
 
-				data = data.split("%")
-				print(data)
+					data = data.split("%")
+					print(data)
 
-				for message in data:
-					if message == "Close":
-						return
+					for message in data:
+						if message == "Close":
+							return
 
-					fileNames = message.split(" ")
-					self.reduce(fileNames)
+						fileNames = message.split(" ")
+						self.reduce(fileNames)
 
-		except socket.timeout:
-			pass
+			except socket.timeout:
+				pass
 
 
 

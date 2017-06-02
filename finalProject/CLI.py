@@ -47,7 +47,7 @@ class CLI(object):
 			self.receiveMessages()
 
 			consoleInput = input("Command (enter 'exit' to quit):")
-			consoleInput = consoleInput.split(" ")
+			consoleInput = consoleInput.split()
 
 			command = consoleInput[0]
 			args = consoleInput[1:]
@@ -56,19 +56,27 @@ class CLI(object):
 				break
 
 			elif command == "map":		# Send message to mappers
-				print("Mapping File")
-				filenameToMapper = args[0]
-				offset1, size1, offset2, size2 = getMappingProperties(filenameToMapper)
-				msgToMapper1 = filenameToMapper + " " + str(offset1) + " " + str(size1) + "%"
-				msgToMapper2 = filenameToMapper + " " + str(offset2) + " " + str(size2) + "%"
-				self.sockToMapper1.sendall((msgToMapper1).encode())
-				self.sockToMapper2.sendall((msgToMapper2).encode())
-				print("Mapping message sent")
-
+				try:
+					print("Mapping File")
+					filenameToMapper = args[0]
+					offset1, size1, offset2, size2 = getMappingProperties(filenameToMapper)
+					msgToMapper1 = filenameToMapper + " " + str(offset1) + " " + str(size1) + "%"
+					msgToMapper2 = filenameToMapper + " " + str(offset2) + " " + str(size2) + "%"
+					self.sockToMapper1.sendall((msgToMapper1).encode())
+					self.sockToMapper2.sendall((msgToMapper2).encode())
+					print("Mapping message sent")
+					
+				except FileNotFoundError:
+					print(" --- File", filenameToMapper, "Not Found --- ")
 
 			elif command == "reduce":
-				pass				# Not needed for part 1
-				#SEND MESSAGE TO REDUCER
+				msgToReducer = ""
+				for fileName in args:
+					msgToReducer = msgToReducer + fileName + " "
+				msgToReducer = msgToReducer[:-1]
+				msgToReducer += "%"
+				print(msgToReducer)
+				self.sockToReducer.sendall((msgToReducer).encode())
 
 			elif command == "replicate":	#part1
 				self.sockToPaxos.sendall(("replicate " + str(args[0]) + "%" ).encode())
@@ -121,12 +129,12 @@ class CLI(object):
 
 		self.sockToMapper1 = Connection.createConnectSocket("127.0.0.1", self.mapper1Port)
 		self.sockToMapper2 = Connection.createConnectSocket("127.0.0.1", self.mapper2Port)
-		# self.sockToReducer = Connection.createConnectSocket("127.0.0.1", self.reducerPort)
+		self.sockToReducer = Connection.createConnectSocket("127.0.0.1", self.reducerPort)
 		# self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
 
 		sleep(5)
 
-		for i in range(2):
+		for i in range(3):
 			self.incomingStream.append(Connection.openConnection(incomingSock))
 
 
@@ -169,6 +177,7 @@ def getMappingProperties(filenameToMapper):
 		numChars = 0
 		for line in lines:
 			numChars += len(line)
+			numChars += 1
 			totalFile = totalFile + line + " "
 		
 		size1 = int(numChars / 2)
@@ -180,6 +189,8 @@ def getMappingProperties(filenameToMapper):
 		
 		size2 = numChars - size1
 		offset2 = size1
+
+		print("numChars is:", numChars)
 
 		return offset1, size1, offset2, size2
 		
