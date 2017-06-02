@@ -17,14 +17,28 @@ class Log():	# MAY NOT NEED THIS CLASS
 			f.truncate()
 			f.write(self.toString())
 
-	def insertAtIndex(self, index, fileName, assocDict):
+
+	def insertAtIndex(self, index, inpString):
 		while(index > (len(self.fileNames) - 1)):
 			self.fileNames.append(None)
 			self.dictionaries.append(None)
 
-		self.fileNames[index] = fileName
-		self.dictionaries[index] = assocDict
+		currBreak = inpString.split("\n")[0]
+		currBreak = currBreak.split("=")
+		print(currBreak)
+		filename = currBreak[0]
+		pairs = currBreak[1].split(",")
+		assocDict = {}
+		for i in pairs:
+			parts = i.split(":")
+			assocDict[parts[0]] = parts[1]
 
+		print(self.fileNames)
+		print(self.dictionaries)
+
+		self.fileNames[index] = filename
+		self.dictionaries[index] = assocDict
+		
 		with open(self.logFile, "w") as f:
 			f.seek(0)
 			f.truncate()
@@ -107,34 +121,41 @@ def buildLogFromString(inputString):
 
 
 
-### TESTING AREA ###
-#def testing():
-#	tempObj = Log()
-#	tempObj.append("file1",{"key1": "value1", "key2": "value2", "randkey":"randval"})
-#	tempObj.append("file2",{"key3": "value3", "key4": "value4", "randkey":"randval"})
-#	inStringFormat = tempObj.toString()
-#	print("To String Output:")
-#	print(inStringFormat)
-#	print("Now Rebuilding and printing")
-#	tempObj = buildLogFromString(inStringFormat)
-#	print(tempObj.toString())
-#	print("Now Printing index 1: ")
-#	print(tempObj.indexToString(1))
-#	print("\nAnd indivisual parts just to be sure: ")
-#	print("    ", tempObj.fileNames)
-#	print("    ", tempObj.dictionaries)
-#
-#	print("\n\nTesting inserting at index, gonna insert at index 3")
-#	tempObj.insertAtIndex(3, "insertfile1", {"keyinsert1": "valueinsert1", "key2": "value2"})
-#	print(tempObj.toString())
-#	tempObj.insertAtIndex(8, "insertfile2", {"keyinsert2": "valueinsert2", "key5": "value5"})
-#	print(tempObj.toString())
-#
-#	print("\n\nNow rebuilding object")
-#	tempString = tempObj.toString()
-#	tempObj = buildLogFromString(tempString)
-#	print(tempObj.toString())
-# Run testing
-#testing()
+# ## TESTING AREA ###
+# def testing():
+# 	tempObj = Log()
+# 	tempObj.append("file1",{"key1": "value1", "key2": "value2", "randkey":"randval"})
+# 	tempObj.append("file2",{"key3": "value3", "key4": "value4", "randkey":"randval"})
+# 	inStringFormat = tempObj.toString()
+# 	print("To String Output:")
+# 	print(inStringFormat)
+# 	print("Now Rebuilding and printing")
+# 	tempObj = buildLogFromString(inStringFormat)
+# 	print(tempObj.toString())
+# 	print("Now Printing index 1: ")
+# 	print(tempObj.indexToString(1))
+# 	print("\nAnd indivisual parts just to be sure: ")
+# 	print("    ", tempObj.fileNames)
+# 	print("    ", tempObj.dictionaries)
 
-### END OF TESTING AREA ###
+# 	tempString = tempObj.indexToString(1)
+# 	print("\n\nTesting inserting at index, gonna insert at index 3")
+# 	tempObj.insertAtIndex(3, tempString)
+# 	print(tempObj.toString())
+
+# 	print("\n\nTesinting iserting at index, gonna insert at index 8")
+# 	tempObj.insertAtIndex(8, tempObj.indexToString(3))
+# 	print(tempObj.toString())
+
+# 	print("\n\nNow rebuilding object")
+# 	tempString = tempObj.toString()
+# 	tempObj = buildLogFromString(tempString)
+# 	print(tempObj.toString())
+
+# 	with open("tempLogFile.txt", "r") as f:
+# 		lines = f.readlines()
+# 		print("Number of lines in temp file:", len(lines))
+# # Run testing
+# testing()
+
+# ## END OF TESTING AREA ###
