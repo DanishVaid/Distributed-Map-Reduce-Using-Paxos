@@ -155,6 +155,14 @@ def buildLogFromString(inputString):
 # 	with open("tempLogFile.txt", "r") as f:
 # 		lines = f.readlines()
 # 		print("Number of lines in temp file:", len(lines))
+
+
+# 	tempObj = Log()
+# 	dict1 = {"hello":2, "how":1, "are":6, "you":3}
+# 	tempObj.append("file1", dict1)
+	
+# 	dict2 = {"hello":2, "how":1, "are":6, "this":1}
+# 	tempObj.append("file2", dict2)
 # # Run testing
 # testing()
 

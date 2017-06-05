@@ -1,13 +1,13 @@
 
 
 def total(positions):
-	f = open("log.txt", 'r')
-	lines = f.readLines()
+	f = open("tempLogFile.txt", 'r')
+	lines = f.readlines()
 	f.close()
 
 	relevantDicts = []
 	for position in positions:
-		relevantDicts.append(lines[position])
+		relevantDicts.append(lines[position - 1])
 
 	# Parse relevantDicts and add up the word/frequencies
 	keys = []
@@ -18,7 +18,7 @@ def total(positions):
 		entries = dictionary.split(",")
 		for entry in entries:
 			key = entry.split(":")[0]
-			value = entry.split(":")[1]
+			value = int(entry.split(":")[1])
 
 			if key in keys:
 				index = keys.index(key)
@@ -33,22 +33,22 @@ def total(positions):
 
 
 def printFileNames():
-	f = open("log.txt", 'r')
-	lines = f.readLines()
+	f = open("tempLogFile.txt", 'r')
+	lines = f.readlines()
 	f.close()
 
 	for line in lines:
-		print(lines.split("=")[0])
+		print(line.split("=")[0])
 
 
 def merge(pos1, pos2):
-	f = open("log.txt", 'r')
-	lines = f.readLines()
+	f = open("tempLogFile.txt", 'r')
+	lines = f.readlines()
 	f.close()
 
 	relevantDicts = []
-	relevantDicts.append(lines[pos1])
-	relevantDicts.append(lines[pos2])
+	relevantDicts.append(lines[pos1 - 1])
+	relevantDicts.append(lines[pos2 - 1])
 
 	keys = []
 	values = []
@@ -59,7 +59,7 @@ def merge(pos1, pos2):
 		entries = dictionary.split(",")
 		for entry in entries:
 			key = entry.split(":")[0]
-			value = entry.split(":")[1]
+			value = int(entry.split(":")[1])
 
 			if key in keys:
 				index = keys.index(key)

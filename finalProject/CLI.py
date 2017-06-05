@@ -95,13 +95,16 @@ class CLI(object):
 				continue
 
 			elif command == "total":		#part1
-				Query.total(args[0])
+				indexes = []
+				for i in args:
+					indexes.append(int(i))
+				Query.total(indexes)
 
 			elif command == "print":		#part1
 				Query.printFileNames()
 
 			elif command == "merge":		#part1
-				Query.merge(args[0], args[1])
+				Query.merge(int(args[0]), int(args[1]))
 
 			elif command == "maptest":
 				self.sockToMapper1.sendall(("messagesSent%").encode())
@@ -201,9 +204,9 @@ def main():
 		exit(1)
 
 	client = CLI(sys.argv[1])
-	client.config()
+	# client.config()
 
-	client.makeConnections()
+	# client.makeConnections()
 	client.takeCommand()
 	client.closeConnections()
 

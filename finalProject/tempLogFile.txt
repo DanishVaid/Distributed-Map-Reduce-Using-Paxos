@@ -1,8 +1,2 @@
-file1=key1:value1,key2:value2,randkey:randval
-file2=key3:value3,key4:value4,randkey:randval
-file1=key1:value1,key2:value2,randkey:randval
-None
-None
-None
-None
-file1=key1:value1,key2:value2,randkey:randval
+file1=hello:2,how:1,are:6,you:3
+file1=hello:2,how:1,are:6,this:1
