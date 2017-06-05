@@ -83,7 +83,7 @@ class Reducer():
 					print(data)
 
 					for message in data:
-						if message == "lose":
+						if message == "close":
 							return
 
 						fileNames = message.split(" ")
