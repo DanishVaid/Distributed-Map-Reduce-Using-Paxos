@@ -212,7 +212,7 @@ class Paxos(object):
 
 				fileName = inMessage[1]
 				print("File to be replicated:", fileName)
-				self.prepare(failName)
+				self.prepare(fileName)
 
 		elif inMessage[0] == "stop":
 			self.sockToClient.sendall(("Paxos got stop%").encode())

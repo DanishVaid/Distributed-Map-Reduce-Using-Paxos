@@ -24,8 +24,7 @@ class CLI(object):
 
 
 	def takeCommand(self):
-		self.receiveMessages()
-		sleep(2)
+		sleep(2)						#For initial start up messages from other processors
 		print("")
 
 		print("List of data processing commands:")
