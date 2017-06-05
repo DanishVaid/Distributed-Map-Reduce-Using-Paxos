@@ -24,6 +24,8 @@ class CLI(object):
 
 
 	def takeCommand(self):
+		self.receiveMessages()
+		sleep(2)
 		print("")
 
 		print("List of data processing commands:")
