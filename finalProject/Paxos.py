@@ -23,6 +23,7 @@ class Paxos(object):
 
 		self.minMajority = 0				# Minimum number of votes for quorum
 
+		self.myProposal = None
 		self.ballotNum = (0, 0)				# Tuples storing ballotNum : siteselfID, index of the log to insert into
 		self.acceptNum = (0, 0)				# Tuples storing acceptNum : siteselfID
 		self.acceptVal = None				# Dictionary to be stored into a log entry
@@ -210,7 +211,7 @@ class Paxos(object):
 				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
 
 				fileName = inMessage[1]
-				print("File to be replicated:", self.myProposal)
+				print("File to be replicated:", fileName)
 				self.prepare(failName)
 
 		elif inMessage[0] == "stop":
