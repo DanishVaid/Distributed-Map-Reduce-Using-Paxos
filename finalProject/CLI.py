@@ -101,7 +101,7 @@ class CLI(object):
 			elif command == "total":		#part1
 				indexes = ""
 				for i in args:
-					indexes.append(" " + str(i))
+					indexes += (" " + str(i))
 				
 				self.sockToPaxos.sendall(("total" + indexes + "%").encode())
 
