@@ -13,8 +13,10 @@ class Reducer():
 
 	def reduce(self, fileNames):
 		for fileName in fileNames:
+			f = None
 			try:
 				f = open(fileName, 'r')
+
 			except FileNotFoundError:
 				print("--- File", fileName, "Not Found --- ")
 				return
@@ -24,11 +26,7 @@ class Reducer():
 				word = line[0]
 				count = int(line[1])
 
-				self.conjoinedDict[word] = self.conjoinedDict.get(word, 0) + count 	#CHECK SYNTAX
-																				#CHECK INSTRUCTIONS
-																				#"IF A WORD IS NOT IN THE DICTIONARY, IT IS INSERTED
-																				#WITH A COUNT OF 1 IN ITS FIRST OCCURENCE"
-																				#HOW COULD THERE BE A FIRST OCCURENCE?
+				self.conjoinedDict[word] = self.conjoinedDict.get(word, 0) + count
 
 			f.close()
 
@@ -85,7 +83,7 @@ class Reducer():
 					print(data)
 
 					for message in data:
-						if message == "Close":
+						if message == "close":
 							return
 
 						fileNames = message.split(" ")

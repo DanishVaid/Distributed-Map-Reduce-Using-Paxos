@@ -18,6 +18,7 @@ class Mapper(object):
 
 	def map(self, fileName, offset, size):
 		print("filename offset size", fileName, offset, size)
+
 		currLookedAt = 0
 		with open(fileName, "r") as f:
 			# lines = f.readlines()
@@ -34,9 +35,11 @@ class Mapper(object):
 			# print("Broken total string:", totalString)
 
 			lines = f.readlines()
+
 			totalString = ""
 			for line in lines:
 				totalString = totalString + line + " "
+
 			print("Intial total string:", totalString)
 			print("Size is:", size)
 			totalString = totalString[offset:(offset + size + 1)]
@@ -45,6 +48,7 @@ class Mapper(object):
 			words = totalString.split()
 			for word in words:
 				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1
+
 			print("Dictionary:", self.wordCounts)
 
 
@@ -100,7 +104,7 @@ class Mapper(object):
 					print(data)
 
 					for message in data:
-						if message == "Close":
+						if message == "close":
 							return
 						
 						fileName = message.split(" ")[0]

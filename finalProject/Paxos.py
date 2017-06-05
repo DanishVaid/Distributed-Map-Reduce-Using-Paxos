@@ -50,11 +50,12 @@ class Paxos(object):
 		for i in range(len(self.socketsToPaxos)):
 			if self.socketsToPaxos[i] == None or i == self.selfID:
 				continue
+
 			self.socketsToPaxos[i].sendall(("reset%").encode())
+
 		self.reset()
 
 		self.myProposal = self.buildLogEntryFromFile(fileName)
-
 
 		self.ballotNum = (log.getSize(), self.selfID)	#DOUBLE CHECK LOGIC
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
@@ -213,7 +214,24 @@ class Paxos(object):
 		elif inMessage[0] == "resume":
 			self.resume()
 
-		elif inMessage[0] == "reset":
+		elif inMessage[0] == "total":
+			indexes = []
+			for i in inMessage[1:]:
+					indexes.append(int(i))
+
+			Query.total(indexes)
+
+		elif inMessage[0] == "print":
+			indexes = []
+			for i in inMessage[1:]:
+					indexes.append(int(i))
+			Query.printFileNames(indexes)
+
+		elif inMessage[0] == "merge":
+			#SHOULD CHANGE LOG OBJECT/FILE?
+			Query.merge(int(inMessage[1]), int(inMessage[2]))
+
+		elif inMessage[0] == "reset":	#TAKE THIS OUT, NEVER RESET, LIST OF PAXOS
 			self.reset()
 
 		else:
@@ -221,21 +239,29 @@ class Paxos(object):
 
 
 	def receiveMessages(self):
-		# We know this is receiving correctly - IT'S BEEN TESTED
-		for stream in self.incomeStreams:
-			stream.settimeout(1)
-			try:
-				data = stream.recv(1024).decode()
-				if len(data) > 0:
-					if data[-1] == "%":
-						data = data[:-1]
-					data = data.split("%")
-					print(data)
-					for i in data:
-						self.processMessage(i)
+		while True:
+			# We know this is receiving correctly - IT'S BEEN TESTED
+			for stream in self.incomeStreams:
+				stream.settimeout(1)
 
-			except socket.timeout:
-				continue
+				try:
+					data = stream.recv(1024).decode()
+
+					if len(data) > 0:
+						if data[-1] == "%":
+							data = data[:-1]
+
+						data = data.split("%")
+
+						print(data)
+						for i in data:
+							if i == "close":
+								return
+
+							self.processMessage(i)
+
+				except socket.timeout:
+					continue
 	
 
 	def makeConnections(self):
@@ -332,9 +358,7 @@ def main():
 	print(str(mainPaxos.incomeStreams))
 	print(str(mainPaxos.socketsToPaxos))
 
-	while True:
-		mainPaxos.receiveMessages()
-		# sleep(.2)
+	mainPaxos.receiveMessages()
 
 	mainPaxos.closeConnections()	#MAKE CONDITION TO EXIT INFINITE LOOP
 
