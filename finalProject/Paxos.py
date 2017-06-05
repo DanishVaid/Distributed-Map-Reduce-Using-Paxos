@@ -222,10 +222,7 @@ class Paxos(object):
 			Query.total(indexes)
 
 		elif inMessage[0] == "print":
-			indexes = []
-			for i in inMessage[1:]:
-					indexes.append(int(i))
-			Query.printFileNames(indexes)
+			Query.printFileNames()
 
 		elif inMessage[0] == "merge":
 			#SHOULD CHANGE LOG OBJECT/FILE?

@@ -95,15 +95,17 @@ class CLI(object):
 				continue
 
 			elif command == "total":		#part1
-				indexes = []
+				indexes = ""
 				for i in args:
-					indexes.append(int(i))
-				Query.total(indexes)
+					indexes.append(" " + str(i))
+				
+				self.sockToPaxos.sendall(("total" + indexes + "%").encode())
 
 			elif command == "print":		#part1
-				Query.printFileNames()
+				self.sockToPaxos.sendall(("print%").encode())
 
 			elif command == "merge":		#part1
+				self.sockToPaxos.sendall(("merge " + str(args[0]) + " " + str(args[1]) + "%").encode())
 				Query.merge(int(args[0]), int(args[1]))
 
 			elif command == "maptest":
