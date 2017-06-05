@@ -36,6 +36,7 @@ class Paxos(object):
 
 		self.hasMajorityPromises = False	# Used for checking majority to initiate insertion of a dictionary to the log
 		self.isFirstAccept = True			# Nodes should not send more accept messages after the first received accept of a unique value
+		self.hasLogged = False
 
 		self.ipAddrs = [None]				# Make the first element None. List of IP addresses of all other Paxos nodes
 		self.ports = [None]					# Make the first element None. List of port numbers of all other Paxos nodes
@@ -48,17 +49,17 @@ class Paxos(object):
 	def prepare(self, fileName):
 		print("---START PREPARE---")
 
-		for i in range(len(self.socketsToPaxos)):
-			if self.socketsToPaxos[i] == None or i == self.selfID:
-				continue
+		# for i in range(len(self.socketsToPaxos)):
+		# 	if self.socketsToPaxos[i] == None or i == self.selfID:
+		# 		continue
 
-			self.socketsToPaxos[i].sendall(("reset%").encode())
+		# 	self.socketsToPaxos[i].sendall(("reset%").encode())
 
-		self.reset()
+		# self.reset()
 
 		self.myProposal = self.buildLogEntryFromFile(fileName)
 
-		self.ballotNum = (log.getSize(), self.selfID)	#DOUBLE CHECK LOGIC
+		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
 
 		for sock in self.socketsToPaxos:
@@ -160,8 +161,10 @@ class Paxos(object):
 				sock.sendall((msg + "%").encode())
 		
 		self.numAcceptsReceived += 1
-		if self.numAcceptsReceived >= self.minMajority:
-			log.insertAtIndex(self.acceptNum[0], self.acceptVal)
+		if self.numAcceptsReceived >= self.minMajority and !self.hasLogged:
+			self.hasLogged = True
+			logIndexTEMP = log.getSize()
+			log.insertAtIndex(logIndexTEMP, self.acceptVal)
 
 			print("Accepted", self.acceptVal)
 
