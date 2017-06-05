@@ -1,0 +1,6 @@
+#!/bin/bash
+
+python3 Mapper.py 1 5002 &
+python3 Mapper.py 2 5003 &
+python3 Reducer.py &
+python3 CLI.py client_config.txt
