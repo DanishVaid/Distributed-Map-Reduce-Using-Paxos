@@ -110,7 +110,6 @@ class CLI(object):
 
 			elif command == "merge":		#part1
 				self.sockToPaxos.sendall(("merge " + str(args[0]) + " " + str(args[1]) + "%").encode())
-				Query.merge(int(args[0]), int(args[1]))
 
 			elif command == "maptest":
 				self.sockToMapper1.sendall(("messagesSent%").encode())
