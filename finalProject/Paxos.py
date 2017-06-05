@@ -210,7 +210,7 @@ class Paxos(object):
 				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
 
 				fileName = inMessage[1]
-				print("File to be replicated:", myProposal)
+				print("File to be replicated:", self.myProposal)
 				self.prepare(failName)
 
 		elif inMessage[0] == "stop":
