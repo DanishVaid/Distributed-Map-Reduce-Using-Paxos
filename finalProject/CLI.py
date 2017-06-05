@@ -135,7 +135,7 @@ class CLI(object):
 		self.sockToMapper1 = Connection.createConnectSocket("127.0.0.1", self.mapper1Port)
 		self.sockToMapper2 = Connection.createConnectSocket("127.0.0.1", self.mapper2Port)
 		self.sockToReducer = Connection.createConnectSocket("127.0.0.1", self.reducerPort)
-		# self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
+		self.sockToPaxos = Connection.createConnectSocket("127.0.0.1", self.paxosPort)
 
 		sleep(5)
 
@@ -206,9 +206,9 @@ def main():
 		exit(1)
 
 	client = CLI(sys.argv[1])
-	# client.config()
+	client.config()
 
-	# client.makeConnections()
+	client.makeConnections()
 	client.takeCommand()
 	client.closeConnections()
 
