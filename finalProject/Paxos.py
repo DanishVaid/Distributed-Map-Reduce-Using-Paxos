@@ -60,7 +60,12 @@ class Paxos(object):
 
 		# self.reset()
 
-		self.myProposal = self.buildLogEntryFromFile(fileName)
+		try:
+			self.myProposal = self.buildLogEntryFromFile(fileName)
+
+		except FileNotFoundError:
+			print("--- Prepare FAILED, File not found:", fileName)
+			return
 
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
 		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
@@ -308,14 +313,17 @@ class Paxos(object):
 
 	def buildLogEntryFromFile(self, fileName):
 		f = open(fileName, 'r')
+
+
 		lines = f.readlines()
 
 		logEntry = fileName + "="
 		for line in lines:
+			line.rstrip("\n")
 			key = line.split(" ")[0]
 			value = line.split(" ")[1]
 
-			logEntry += key + "." + value + ","
+			logEntry += key + ":" + value + ","
 
 		logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
 
