@@ -7,7 +7,7 @@ class Reducer():
 	def __init__(self):
 		self.conjoinedDict = {}
 
-		self.socketFromCLI = None
+		self.socketToCLI = None
 		self.incomeStream = None
 
 
@@ -63,7 +63,7 @@ class Reducer():
 
 
 	def closeConnections(self):
-		Connection.closeSocket(self.socketFromCLI)
+		Connection.closeSocket(self.socketToCLI)
 
 
 	def receiveMessages(self):
@@ -83,7 +83,7 @@ class Reducer():
 					print(data)
 
 					for message in data:
-						if message == "close":
+						if message == "lose":
 							return
 
 						fileNames = message.split(" ")
