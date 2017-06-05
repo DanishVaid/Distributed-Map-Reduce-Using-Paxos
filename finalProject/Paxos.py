@@ -166,7 +166,7 @@ class Paxos(object):
 		self.numAcceptsReceived += 1
 		if self.numAcceptsReceived >= self.minMajority and not self.hasLogged:
 			self.hasLogged = True
-			self.logIndex = log.getSize()
+			self.logIndex = self.log.getSize()
 			log.insertAtIndex(logIndexTEMP, self.acceptVal)
 
 			print("Accepted", self.acceptVal)
