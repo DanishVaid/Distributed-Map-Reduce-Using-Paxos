@@ -36,7 +36,9 @@ class Paxos(object):
 
 		self.hasMajorityPromises = False	# Used for checking majority to initiate insertion of a dictionary to the log
 		self.isFirstAccept = True			# Nodes should not send more accept messages after the first received accept of a unique value
+
 		self.hasLogged = False
+		self.logIndex = 0
 
 		self.ipAddrs = [None]				# Make the first element None. List of IP addresses of all other Paxos nodes
 		self.ports = [None]					# Make the first element None. List of port numbers of all other Paxos nodes
@@ -163,7 +165,7 @@ class Paxos(object):
 		self.numAcceptsReceived += 1
 		if self.numAcceptsReceived >= self.minMajority and !self.hasLogged:
 			self.hasLogged = True
-			logIndexTEMP = log.getSize()
+			self.logIndex = log.getSize()
 			log.insertAtIndex(logIndexTEMP, self.acceptVal)
 
 			print("Accepted", self.acceptVal)
