@@ -319,7 +319,7 @@ class Paxos(object):
 
 		logEntry = fileName + "="
 		for line in lines:
-			line.rstrip("\n")
+			line = line.rstrip("\n")
 			key = line.split(" ")[0]
 			value = line.split(" ")[1]
 
