@@ -53,6 +53,10 @@ class CLI(object):
 			args = consoleInput[1:]
 
 			if command == "exit":
+				self.sockToMapper1.sendall(("close%").encode())
+				self.sockToMapper2.sendall(("close%").encode())
+				self.sockToReducer.sendall(("close%").encode())
+				self.sockToPaxos.sendall(("close%").encode())
 				break
 
 			elif command == "map":		# Send message to mappers
@@ -139,7 +143,7 @@ class CLI(object):
 
 		sleep(5)
 
-		for i in range(3):
+		for i in range(4):
 			self.incomingStream.append(Connection.openConnection(incomingSock))
 
 
