@@ -163,7 +163,7 @@ class Paxos(object):
 				sock.sendall((msg + "%").encode())
 		
 		self.numAcceptsReceived += 1
-		if self.numAcceptsReceived >= self.minMajority and !self.hasLogged:
+		if self.numAcceptsReceived >= self.minMajority and not self.hasLogged:
 			self.hasLogged = True
 			self.logIndex = log.getSize()
 			log.insertAtIndex(logIndexTEMP, self.acceptVal)
