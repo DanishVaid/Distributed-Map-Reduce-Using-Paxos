@@ -25,16 +25,13 @@ class Log():	# MAY NOT NEED THIS CLASS
 
 		currBreak = inpString.split("\n")[0]
 		currBreak = currBreak.split("=")
-		print(currBreak)
+
 		filename = currBreak[0]
 		pairs = currBreak[1].split(",")
 		assocDict = {}
 		for i in pairs:
 			parts = i.split(":")
 			assocDict[parts[0]] = parts[1]
-
-		print(self.fileNames)
-		print(self.dictionaries)
 
 		self.fileNames[index] = filename
 		self.dictionaries[index] = assocDict
