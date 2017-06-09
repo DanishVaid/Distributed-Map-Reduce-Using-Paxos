@@ -21,7 +21,7 @@ class Paxos(object):
 		self.configFile = configFile		# File name to read in configurations
 		self.log = Log.Log()				# Log object
 
-		self.minMajority = 0				# Minimum number of votes for quorum
+		# self.minMajority = 0				# Minimum number of votes for quorum
 
 		self.myProposal = None
 		self.ballotNum = (0, 0)				# Tuples storing ballotNum : siteselfID, index of the log to insert into
@@ -41,13 +41,13 @@ class Paxos(object):
 		self.hasLogged = False
 		self.logIndex = 0
 
-		self.ipAddrs = [None]				# Make the first element None. List of IP addresses of all other Paxos nodes
-		self.ports = [None]					# Make the first element None. List of port numbers of all other Paxos nodes
+		# self.ipAddrs = [None]				# Make the first element None. List of IP addresses of all other Paxos nodes
+		# self.ports = [None]					# Make the first element None. List of port numbers of all other Paxos nodes
 
-		self.mySock = None					# Socket for incoming messages
-		self.incomeStreams = []				# Gather all the streams to check for messages
-		self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
-		self.sockToClient = None
+		# self.mySock = None					# Socket for incoming messages
+		# self.incomeStreams = []				# Gather all the streams to check for messages
+		# self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
+		# self.sockToClient = None
 
 	def prepare(self, fileName):
 		print("---START PREPARE---")

@@ -12,6 +12,7 @@ class Reducer():
 
 
 	def reduce(self, fileNames):
+		### Read contents from input files ###
 		for fileName in fileNames:
 			f = None
 			try:
@@ -30,14 +31,15 @@ class Reducer():
 
 			f.close()
 
+		### Build name of output file ###
 		originalFileName = str(fileNames[0].split("_")[0])
-
 		try:
 			outputFileName = (originalFileName.split("."))[0] + "_reduced" + "." + (fileNames[0].split("."))[1]
 
 		except IndexError:
 			outputFileName = (originalFileName.split("."))[0] + "_reduced"
 
+		### Print out to the output file ###
 		self.writeToFile(outputFileName)
 		
 
@@ -45,20 +47,16 @@ class Reducer():
 		f = open(outputFileName, 'w')
 
 		for key, value in self.conjoinedDict.items():
-			f.write(str(key) + " " + str(value) + "\n")
+			f.write(str(key) + " " + str(value) + "\n")		# Writes "key value", split by line per entry
 
 		f.close()
 
 
 	def makeConnections(self):
 		incomeSock = Connection.createAcceptSocket("127.0.0.1", 5004)
-
 		sleep(5)
-
 		self.socketToCLI = Connection.createConnectSocket("127.0.0.1", 5001)
-
 		sleep(5)
-
 		self.incomeStream = Connection.openConnection(incomeSock)
 
 

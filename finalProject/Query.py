@@ -28,8 +28,13 @@ def total(positions):
 				keys.append(key)
 				values.append(value)
 
+	totalWords = 0
 	for i in range(len(keys)):
 		print(str(keys[i]) + " " + str(values[i]))
+		totalWords += values[i]
+
+	#PRINT TOTAL
+	print("Total: " + str(totalWords))
 
 
 def printFileNames():

@@ -9,22 +9,23 @@ from time import sleep
 class CLI(object):
 	
 	def __init__(self, configFile):
-		self.configFile = configFile	#File name of config file for CLI
+		self.configFile = configFile	# File name of config file for CLI
 
-		self.mapper1Port = None			#Port number to other processes in same node
+		self.mapper1Port = None			# Port number to other processes in same node
 		self.mapper2Port = None
 		self.reducerPort = None
 		self.paxosPort = None
 
-		self.sockToMapper1 = None		#Sockets to other processes in same node
+		self.sockToMapper1 = None		# Sockets to other processes in same node
 		self.sockToMapper2 = None
 		self.sockToReducer = None
 		self.sockToPaxos = None
-		self.incomingStream = []
+
+		self.incomingStream = []		# Stream to receive incoming messages
 
 
 	def takeCommand(self):
-		sleep(2)						#For initial start up messages from other processors
+		sleep(2)						# For initial start up messages from other processes
 		print("")
 
 		print("List of data processing commands:")
@@ -45,7 +46,8 @@ class CLI(object):
 		print("")
 
 		while True:
-			self.receiveMessages()
+			# REPLACE WITH THREADING
+			self.receiveMessages()		# Check and receive messages
 
 			consoleInput = input("Command (enter 'exit' to quit):")
 			consoleInput = consoleInput.split()
@@ -53,6 +55,7 @@ class CLI(object):
 			command = consoleInput[0]
 			args = consoleInput[1:]
 
+			### Ends the program. Send exit to all processes. ###
 			if command == "exit":
 				self.sockToMapper1.sendall(("close%").encode())
 				self.sockToMapper2.sendall(("close%").encode())
@@ -60,7 +63,8 @@ class CLI(object):
 				self.sockToPaxos.sendall(("close%").encode())
 				break
 
-			elif command == "map":		# Send message to mappers
+			### Initiate map command to both Mapper processes ###
+			elif command == "map":
 				try:
 					print("Mapping File")
 					filenameToMapper = args[0]
@@ -74,31 +78,37 @@ class CLI(object):
 				except FileNotFoundError:
 					print(" --- File", filenameToMapper, "Not Found --- ")
 
+			### Initiate reduce command to Reducer process ###
 			elif command == "reduce":
 				msgToReducer = ""
 				for fileName in args:
 					msgToReducer = msgToReducer + fileName + " "
 				msgToReducer = msgToReducer[:-1]
 				msgToReducer += "%"
-				print(msgToReducer)
+				print(msgToReducer)	# DO WE WANT THIS PRINT STATEMENT?
 				self.sockToReducer.sendall((msgToReducer).encode())
 
+			### Initiate Paxos to replicate a log ###
 			elif command == "replicate":	#part1
 				self.sockToPaxos.sendall(("replicate " + str(args[0]) + "%" ).encode())
 
+			### Stops the Paxos, imitates an offline node. ###
 			elif command == "stop":			#part1
 				print("Sending Stop")
 				print(self.sockToPaxos)
 				self.sockToPaxos.sendall(("stop%").encode())
 
+			### Resumes the Paxos, imitates a node coming online. ###
 			elif command == "resume":		#part1
 				print("Sending Resume")
 				self.sockToPaxos.sendall(("resume%").encode())
 
+			### Look for received messages ###
 			elif command == "status":
 				print("Checking messages/status")
 				continue
 
+			### Prints total amount of words ###
 			elif command == "total":		#part1
 				indexes = ""
 				for i in args:
@@ -106,14 +116,13 @@ class CLI(object):
 				
 				self.sockToPaxos.sendall(("total" + indexes + "%").encode())
 
+			### Prints all file names ###
 			elif command == "print":		#part1
 				self.sockToPaxos.sendall(("print%").encode())
 
+			### Merges two log entries and prints ###
 			elif command == "merge":		#part1
 				self.sockToPaxos.sendall(("merge " + str(args[0]) + " " + str(args[1]) + "%").encode())
-
-			elif command == "maptest":
-				self.sockToMapper1.sendall(("messagesSent%").encode())
 
 			else:
 				print("Not a recognizable command")
@@ -156,15 +165,20 @@ class CLI(object):
 
 	def receiveMessages(self):
 		numStream = 0
+
 		for stream in self.incomingStream:
 			stream.settimeout(1)
+
 			try:
 				data = stream.recv(1024).decode()
+
 				if len(data) > 0:
 					if data[-1] == "%":
 						data = data[:-1]
+
 					data = data.split("%")
 					print(data)
+
 			except socket.timeout:
 				print("No message received for stream", numStream)
 				numStream += 1

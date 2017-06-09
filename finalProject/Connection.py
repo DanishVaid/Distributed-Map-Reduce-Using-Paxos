@@ -1,6 +1,8 @@
 import socket
 from time import sleep
 
+### Connection class. Static functions. ###
+
 def openConnection(acceptSock):
 	stream, clientAddress = acceptSock.accept()
 	return stream

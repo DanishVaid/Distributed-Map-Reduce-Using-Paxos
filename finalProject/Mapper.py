@@ -1,63 +1,53 @@
 import sys
 
-import Connection
 from time import sleep
+import Connection
 import socket
 
 class Mapper(object):
 
 	def __init__(self, ID, port):
-		self.ID = ID
-		self.port = port
+		self.ID = ID 				# Used to differentiate between multiple mappers
+		self.port = port			# Because we will have more than one
 
-		self.wordCounts = {}
+		self.wordCounts = {}		# Dictionary for (word, count) pairing
 
-		self.socketToCLI = None
-		self.incomeStream = None
+		self.socketToCLI = None		# Socket to send messages back to the client
+		self.incomeStream = None	# Stream to receive from the client
 
 
 	def map(self, fileName, offset, size):
-		print("filename offset size", fileName, offset, size)
+		print("filename offset size", fileName, offset, size)	# Print input
 
-		currLookedAt = 0
-		with open(fileName, "r") as f:
-			# lines = f.readlines()
-			# totalString = ""
-			# for line in lines:
-			# 	if currLookedAt > size:
-			# 		break
-
-			# 	currLookedAt += len(line)
-			# 	totalString = totalString + line + " "
-			
-			# print("Initial total string:", totalString)
-			# totalString = totalString[:size]
-			# print("Broken total string:", totalString)
-
+		currLookedAt = 0	# NOT USED
+		### Read contents from input file ###
+		with open(fileName, "r") as f:	# Parse file
 			lines = f.readlines()
 
 			totalString = ""
 			for line in lines:
 				totalString = totalString + line + " "
 
+			# DO WE WANT THESE PRINT STATEMENTS?
 			print("Intial total string:", totalString)
 			print("Size is:", size)
-			totalString = totalString[offset:(offset + size + 1)]
+			totalString = totalString[offset:(offset + size + 1)]			# Choose segment of the file
 			print("Broken total string:", totalString)
 
 			words = totalString.split()
 			for word in words:
-				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1
+				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1 	# Build word counts into dictionary
 
 			print("Dictionary:", self.wordCounts)
 
-
+		### Build name of output file ###
 		try:
 			outputFileName = (fileName.split("."))[0] + "_I_" + str(self.ID) + "." + (fileName.split("."))[1]
 
 		except IndexError:
 			outputFileName = (fileName.split("."))[0] + "_I_" + str(self.ID)
 
+		### Print out to an output file ###
 		self.writeToFile(outputFileName)
 		print("Finished Writing to file:", outputFileName)
 
@@ -66,20 +56,16 @@ class Mapper(object):
 		f = open(outputFileName, 'w')
 
 		for key, value in self.wordCounts.items():
-			f.write(str(key) + " " + str(value) + "\n")
+			f.write(str(key) + " " + str(value) + "\n")		# Writes "key value", split by line per entry
 
 		f.close()
 
 
 	def makeConnections(self):
 		incomeSock = Connection.createAcceptSocket("127.0.0.1", self.port)
-
 		sleep(5)
-
 		self.socketToCLI = Connection.createConnectSocket("127.0.0.1", 5001)
-
 		sleep(5)
-
 		self.incomeStream = Connection.openConnection(incomeSock)
 
 	
@@ -122,7 +108,7 @@ class Mapper(object):
 def main():
 	args = sys.argv
 
-	mapper = Mapper(args[1], args[2])	#ID, port
+	mapper = Mapper(args[1], args[2])	# ID, port
 	
 	mapper.makeConnections()
 	mapper.receiveMessages()
