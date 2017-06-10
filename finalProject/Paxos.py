@@ -179,155 +179,155 @@ class Paxos(object):
 		print("---END ACCEPTED---")
 
 
-	def stop(self):
-		print("Stop Called")
-		self.isActive = False
+	# def stop(self):
+	# 	print("Stop Called")
+	# 	self.isActive = False
 
 
-	def resume(self):
-		print("Resume Called")
-		self.isActive = True
+	# def resume(self):
+	# 	print("Resume Called")
+	# 	self.isActive = True
 
 
-	def processMessage(self, inMessage):
-		inMessage = inMessage.split(" ")
+	# def processMessage(self, inMessage):
+	# 	inMessage = inMessage.split(" ")
 
-		if inMessage[0] == "prepare":
-			if self.isActive:
-				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
-				self.acknowledge(incomingBallotNum)
+	# 	if inMessage[0] == "prepare":
+	# 		if self.isActive:
+	# 			incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
+	# 			self.acknowledge(incomingBallotNum)
 
-		elif inMessage[0] == "ack":
-			if self.isActive:
-				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
-				incomingAcceptNum = (int(inMessage[3]), int(inMessage[4]))
-				incomingAcceptVal = inMessage[5]
-				self.accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
+	# 	elif inMessage[0] == "ack":
+	# 		if self.isActive:
+	# 			incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
+	# 			incomingAcceptNum = (int(inMessage[3]), int(inMessage[4]))
+	# 			incomingAcceptVal = inMessage[5]
+	# 			self.accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
 		
-		elif inMessage[0] == "accept":
-			if self.isActive:
-				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
-				incomingAcceptVal = inMessage[3]
-				self.accepted(incomingBallotNum, incomingAcceptVal)
+	# 	elif inMessage[0] == "accept":
+	# 		if self.isActive:
+	# 			incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
+	# 			incomingAcceptVal = inMessage[3]
+	# 			self.accepted(incomingBallotNum, incomingAcceptVal)
 
-		elif inMessage[0] == "replicate":
-			if self.isActive:
-				# INMESSAG[1] IS A FILE NAME, NEED TO GET CONTENTS FROM FILE AND PUT INTO PROPOSAL
-				# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
+	# 	elif inMessage[0] == "replicate":
+	# 		if self.isActive:
+	# 			# INMESSAG[1] IS A FILE NAME, NEED TO GET CONTENTS FROM FILE AND PUT INTO PROPOSAL
+	# 			# INSTEAD OF PUTTING THE FILE NAME INTO PROPOSAL
 
-				fileName = inMessage[1]
-				print("File to be replicated:", fileName)
-				self.prepare(fileName)
+	# 			fileName = inMessage[1]
+	# 			print("File to be replicated:", fileName)
+	# 			self.prepare(fileName)
 
-		elif inMessage[0] == "stop":
-			self.sockToClient.sendall(("Paxos got stop%").encode())
-			self.stop()
+	# 	elif inMessage[0] == "stop":
+	# 		self.sockToClient.sendall(("Paxos got stop%").encode())
+	# 		self.stop()
 
-		elif inMessage[0] == "resume":
-			self.resume()
+	# 	elif inMessage[0] == "resume":
+	# 		self.resume()
 
-		elif inMessage[0] == "total":
-			indexes = []
-			for i in inMessage[1:]:
-					indexes.append(int(i))
+	# 	elif inMessage[0] == "total":
+	# 		indexes = []
+	# 		for i in inMessage[1:]:
+	# 				indexes.append(int(i))
 
-			Query.total(indexes)
+	# 		Query.total(indexes)
 
-		elif inMessage[0] == "print":
-			Query.printFileNames()
+	# 	elif inMessage[0] == "print":
+	# 		Query.printFileNames()
 
-		elif inMessage[0] == "merge":
-			#SHOULD CHANGE LOG OBJECT/FILE?
-			Query.merge(int(inMessage[1]), int(inMessage[2]))
+	# 	elif inMessage[0] == "merge":
+	# 		#SHOULD CHANGE LOG OBJECT/FILE?
+	# 		Query.merge(int(inMessage[1]), int(inMessage[2]))
 
-		elif inMessage[0] == "reset":	#TAKE THIS OUT, NEVER RESET, LIST OF PAXOS
-			self.reset()
+	# 	elif inMessage[0] == "reset":	#TAKE THIS OUT, NEVER RESET, LIST OF PAXOS
+	# 		self.reset()
 
-		else:
-			print(" --- ERROR, should never reach here --- ")
+	# 	else:
+	# 		print(" --- ERROR, should never reach here --- ")
 
 
-	def receiveMessages(self):
-		while True:
-			# We know this is receiving correctly - IT'S BEEN TESTED
-			for stream in self.incomeStreams:
-				stream.settimeout(1)
+	# def receiveMessages(self):
+	# 	while True:
+	# 		# We know this is receiving correctly - IT'S BEEN TESTED
+	# 		for stream in self.incomeStreams:
+	# 			stream.settimeout(1)
 
-				try:
-					data = stream.recv(1024).decode()
+	# 			try:
+	# 				data = stream.recv(1024).decode()
 
-					if len(data) > 0:
-						if data[-1] == "%":
-							data = data[:-1]
+	# 				if len(data) > 0:
+	# 					if data[-1] == "%":
+	# 						data = data[:-1]
 
-						data = data.split("%")
+	# 					data = data.split("%")
 
-						print(data)
-						for i in data:
-							if i == "close":
-								return
+	# 					print(data)
+	# 					for i in data:
+	# 						if i == "close":
+	# 							return
 
-							self.processMessage(i)
+	# 						self.processMessage(i)
 
-				except socket.timeout:
-					continue
+	# 			except socket.timeout:
+	# 				continue
 	
 
-	def makeConnections(self):
-		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
-		sockFromCLI = Connection.createAcceptSocket("127.0.0.1", 5005)
-		sleep(5)
+	# def makeConnections(self):
+	# 	self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
+	# 	sockFromCLI = Connection.createAcceptSocket("127.0.0.1", 5005)
+	# 	sleep(5)
 
-		self.sockToClient = Connection.createConnectSocket("127.0.0.1", 5001)
-		for i in range(1, len(self.ipAddrs)):
-			IP = self.ipAddrs[i]
-			port = self.ports[i]
+	# 	self.sockToClient = Connection.createConnectSocket("127.0.0.1", 5001)
+	# 	for i in range(1, len(self.ipAddrs)):
+	# 		IP = self.ipAddrs[i]
+	# 		port = self.ports[i]
 
-			# Other Paxos Sockets
-			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
+	# 		# Other Paxos Sockets
+	# 		self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
 		
-		# To let other programs create their sockets
-		sleep(5)
-		for i in range(len(self.ipAddrs) - 1):
-			self.incomeStreams.append(Connection.openConnection(self.mySock))
-		self.incomeStreams.append(Connection.openConnection(sockFromCLI))
-		print("--- ALL CONNECTIONS MADE ---")
+	# 	# To let other programs create their sockets
+	# 	sleep(5)
+	# 	for i in range(len(self.ipAddrs) - 1):
+	# 		self.incomeStreams.append(Connection.openConnection(self.mySock))
+	# 	self.incomeStreams.append(Connection.openConnection(sockFromCLI))
+	# 	print("--- ALL CONNECTIONS MADE ---")
 
 
-	def closeConnections(self):
-		Connection.closeSocket(self.mySock)
-		for i in range(1, len(self.socketsToPaxos)):
-			Connection.closeSocket(self.socketsToPaxos[i])
+	# def closeConnections(self):
+	# 	Connection.closeSocket(self.mySock)
+	# 	for i in range(1, len(self.socketsToPaxos)):
+	# 		Connection.closeSocket(self.socketsToPaxos[i])
 
 
-	def config(self):
-		f = open(self.configFile, 'r')
+	# def config(self):
+	# 	f = open(self.configFile, 'r')
 
-		for line in f:
-			line = line.split()
-			self.ipAddrs.append(line[0])
-			self.ports.append(line[1])
+	# 	for line in f:
+	# 		line = line.split()
+	# 		self.ipAddrs.append(line[0])
+	# 		self.ports.append(line[1])
 
-		self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
-
-
-	def buildLogEntryFromFile(self, fileName):
-		f = open(fileName, 'r')
+	# 	self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
 
 
-		lines = f.readlines()
+	# def buildLogEntryFromFile(self, fileName):
+	# 	f = open(fileName, 'r')
 
-		logEntry = fileName + "="
-		for line in lines:
-			line = line.rstrip("\n")
-			key = line.split(" ")[0]
-			value = line.split(" ")[1]
 
-			logEntry += key + ":" + value + ","
+	# 	lines = f.readlines()
 
-		logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
+	# 	logEntry = fileName + "="
+	# 	for line in lines:
+	# 		line = line.rstrip("\n")
+	# 		key = line.split(" ")[0]
+	# 		value = line.split(" ")[1]
 
-		return logEntry
+	# 		logEntry += key + ":" + value + ","
+
+	# 	logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
+
+	# 	return logEntry
 
 
 	def reset(self):
@@ -352,8 +352,6 @@ class Paxos(object):
 ############################ END PAXOS CLASS ##############################
 
 def main():
-	# recieve function
-	# process on receive
 
 	if len(sys.argv) != 3:
 		print("--- ERROR : Please provide the site ID and config file ---\n")
