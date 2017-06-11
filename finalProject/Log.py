@@ -1,11 +1,11 @@
 
-class Log():	# MAY NOT NEED THIS CLASS
+class Log(object):
 
 	def __init__(self):
 		self.fileNames = [None]		# List of files names, indexes start at 1
 		self.dictionaries = [None]	# List of dictionaries, indexes start at 1
 
-		self.logFile = "tempLogFile.txt"
+		self.logFile = "log.txt"
 
 
 	def append(self, fileName, assocDict):
