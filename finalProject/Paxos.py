@@ -1,27 +1,18 @@
 #!/bin/python3
 
-import socket 			# To create network connection
-import sys				# For command line arguments
-import Connection		# Makes the Sockets
+# import socket 			# To create network connection
+# import sys				# For command line arguments
+# import Connection		# Makes the Sockets
 import Log				# Our Log Class
-import Query
-import queue			# Queue for messages
-from math import floor	# Helps calculate minMajority
-from time import sleep	# Allows for creating sockets in the correct order
+# import Query
+# import queue			# Queue for messages
+# from math import floor	# Helps calculate minMajority
+# from time import sleep	# Allows for creating sockets in the correct order
 
 class Paxos(object):
 	
-	def __init__(self, selfID, configFile):
+	def __init__(self, selfID):
 		self.selfID = selfID 				# Index of IP/port pair in config file
-		self.msgQueue = queue.Queue()		# Gathers messages, helps when two messages get combined
-
-		self.isActive = True				# Used for resume/stop message from the CLI
-		self.isLeader = False				# CURRENTLY NOT USED
-
-		self.configFile = configFile		# File name to read in configurations
-		self.log = Log.Log()				# Log object
-
-		# self.minMajority = 0				# Minimum number of votes for quorum
 
 		self.myProposal = None
 		self.ballotNum = (0, 0)				# Tuples storing ballotNum : siteselfID, index of the log to insert into
@@ -41,30 +32,15 @@ class Paxos(object):
 		self.hasLogged = False
 		self.logIndex = 0
 
-		# self.ipAddrs = [None]				# Make the first element None. List of IP addresses of all other Paxos nodes
-		# self.ports = [None]					# Make the first element None. List of port numbers of all other Paxos nodes
-
-		# self.mySock = None					# Socket for incoming messages
-		# self.incomeStreams = []				# Gather all the streams to check for messages
-		# self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
-		# self.sockToClient = None
 
 	def prepare(self, fileName):
 		print("---START PREPARE---")
-
-		# for i in range(len(self.socketsToPaxos)):
-		# 	if self.socketsToPaxos[i] == None or i == self.selfID:
-		# 		continue
-
-		# 	self.socketsToPaxos[i].sendall(("reset%").encode())
-
-		# self.reset()
 
 		try:
 			self.myProposal = self.buildLogEntryFromFile(fileName)
 
 		except FileNotFoundError:
-			print("--- Prepare FAILED, File not found:", fileName)
+			print("--- Prepare FAILED, File not found:" + fileName + " ---")
 			return
 
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
@@ -102,7 +78,9 @@ class Paxos(object):
 		
 	def accept(self, incomingBallotNum, incomingAcceptNum, incomingAcceptVal):
 		print("---START ACCEPT---")
-		if self.hasMajorityPromises:	# Check to make sure you don't start again
+
+		### Check to make sure you don't start again ###
+		if self.hasMajorityPromises:	
 			return
 
 		self.numPromises += 1
@@ -140,20 +118,20 @@ class Paxos(object):
 				outMessage = ("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal))
 				sock.sendall((outMessage + "%").encode())
 
-			print("---END ACCEPT---")
+		print("---END ACCEPT---")
 
 
 	def accepted(self, incomingBallotNum, incomingAcceptVal):
 		print("---START ACCEPTED---")
 
-		# If incomingBallotNum does not meet condition, do nothing
+		### If incomingBallotNum does not meet condition, do nothing. ###
 		if incomingBallotNum[0] <= self.ballotNum[0]:
 			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
 				print("Accept rejected.")
 				return
 
 		self.acceptNum = incomingBallotNum
-		self.acceptVal = incomingAcceptVal	#THIS MAY OR MAY NOT BE CORRECT
+		self.acceptVal = incomingAcceptVal
 
 		if self.isFirstAccept:
 			print("First accept received. Should not enter here unless accept value changes.")
@@ -311,66 +289,45 @@ class Paxos(object):
 	# 	self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
 
 
-	# def buildLogEntryFromFile(self, fileName):
-	# 	f = open(fileName, 'r')
+	def buildLogEntryFromFile(self, fileName):
+		f = open(fileName, 'r')
 
 
-	# 	lines = f.readlines()
+		lines = f.readlines()
 
-	# 	logEntry = fileName + "="
-	# 	for line in lines:
-	# 		line = line.rstrip("\n")
-	# 		key = line.split(" ")[0]
-	# 		value = line.split(" ")[1]
+		logEntry = fileName + "="
+		for line in lines:
+			line = line.rstrip("\n")
+			key = line.split(" ")[0]
+			value = line.split(" ")[1]
 
-	# 		logEntry += key + ":" + value + ","
+			logEntry += key + ":" + value + ","
 
-	# 	logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
+		logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
 
-	# 	return logEntry
+		return logEntry
+	
 
+# def main():
 
-	def reset(self):
-		print("Resetting")
+# 	if len(sys.argv) != 3:
+# 		print("--- ERROR : Please provide the site ID and config file ---\n")
+# 		exit(1)
 
-		# Reset ballotNum[0] to be log size
-		#self.ballotNum = (0, 0)
-		self.acceptNum = (0, 0)
-		self.acceptVal = None
+# 	mainPaxos = Paxos(int(sys.argv[1]), sys.argv[2])
+# 	mainPaxos.config()
 
-		self.numPromises = 0
-		self.numVotes = 0
-		self.numAcceptsReceived = 0
+# 	print(str(mainPaxos.ipAddrs))
+# 	print(str(mainPaxos.ports))
 
-		self.incomingAcceptNums = []
-		self.ackAcceptVals = []
+# 	mainPaxos.makeConnections()
 
-		self.hasMajorityPromises = False
-		self.isFirstAccept = True
-		
+# 	print(str(mainPaxos.incomeStreams))
+# 	print(str(mainPaxos.socketsToPaxos))
 
-############################ END PAXOS CLASS ##############################
+# 	mainPaxos.receiveMessages()
 
-def main():
+# 	mainPaxos.closeConnections()	#MAKE CONDITION TO EXIT INFINITE LOOP
 
-	if len(sys.argv) != 3:
-		print("--- ERROR : Please provide the site ID and config file ---\n")
-		exit(1)
-
-	mainPaxos = Paxos(int(sys.argv[1]), sys.argv[2])
-	mainPaxos.config()
-
-	print(str(mainPaxos.ipAddrs))
-	print(str(mainPaxos.ports))
-
-	mainPaxos.makeConnections()
-
-	print(str(mainPaxos.incomeStreams))
-	print(str(mainPaxos.socketsToPaxos))
-
-	mainPaxos.receiveMessages()
-
-	mainPaxos.closeConnections()	#MAKE CONDITION TO EXIT INFINITE LOOP
-
-if __name__ == "__main__":
-	main()
+# if __name__ == "__main__":
+# 	main()

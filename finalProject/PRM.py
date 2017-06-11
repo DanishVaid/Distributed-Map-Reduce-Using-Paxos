@@ -1,7 +1,16 @@
 #!/bin/python3
 
 import Paxos
+import Query
 import Log
+
+import sys
+import queue
+
+import socket
+from time import sleep
+
+from math import floor
 
 class PRM(object):
 
@@ -10,6 +19,7 @@ class PRM(object):
 		self.configFile = configFile		# File name to read in configurations
 
 		self.paxosRounds = []				# List of Paxos for multi-Paxos algorithm
+		self.msgQueue = queue.Queue()
 		self.log = Log.Log()				# Log object
 
 		self.minMajority = 0				# Minimum number of votes for quorum
@@ -25,7 +35,7 @@ class PRM(object):
 
 
 	def stop(self):
-		print("Stop Called")
+		print("Stop Called")	
 		self.isActive = False
 
 
@@ -36,29 +46,37 @@ class PRM(object):
 
 	def processMessage(self, inMessage):
 		inMessage = inMessage.split(" ")
+		paxosIndex = log.getSize()
+
+		while paxosIndex > len(paxosRounds):
+			paxosRounds.append(PRM(self.siteID))	# MAY NEED MORE PARAMETERS
 
 		if inMessage[0] == "replicate":
 			if self.isActive:
 				fileName = inMessage[1]
-				self.prepare(fileName)
+				paxosRounds[paxosIndex].prepare(fileName)
 
 		elif inMessage[0] == "prepare":
 			if self.isActive:
 				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
-				self.acknowledge(incomingBallotNum)
+				paxosRounds[paxosIndex].acknowledge(incomingBallotNum)
 
 		elif inMessage[0] == "ack":
 			if self.isActive:
 				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
 				incomingAcceptNum = (int(inMessage[3]), int(inMessage[4]))
 				incomingAcceptVal = inMessage[5]
-				self.accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
+				paxosRounds[paxosIndex].accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
 		
 		elif inMessage[0] == "accept":
 			if self.isActive:
 				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
 				incomingAcceptVal = inMessage[3]
-				self.accepted(incomingBallotNum, incomingAcceptVal)
+				paxosRounds[paxosIndex].accepted(incomingBallotNum, incomingAcceptVal)
+
+		elif inMessage[0] == "ping":
+			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
+			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
 
 		elif inMessage[0] == "stop":
 			self.sockToClient.sendall(("Paxos got stop%").encode())
@@ -70,7 +88,7 @@ class PRM(object):
 		elif inMessage[0] == "total":
 			indexes = []
 			for i in inMessage[1:]:
-					indexes.append(int(i))
+				indexes.append(int(i))
 
 			Query.total(indexes)
 
@@ -85,6 +103,8 @@ class PRM(object):
 
 
 	def receiveMessages(self):
+		# NEED TO COMPENSATE FOR WHEN MESSAGES ARE BIGGER THAN 1024
+
 		while True:
 			for stream in self.incomeStreams:
 				stream.settimeout(1)
@@ -120,7 +140,7 @@ class PRM(object):
 			IP = self.ipAddrs[i]
 			port = self.ports[i]
 
-			# Other Paxos Sockets
+			# Other PRM Sockets
 			self.socketsToPaxos.append(Connection.createConnectSocket(IP, port))
 		
 		sleep(5)
@@ -150,23 +170,6 @@ class PRM(object):
 		self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
 
 
-	def buildLogEntryFromFile(self, fileName):
-		f = open(fileName, 'r')
-		lines = f.readlines()
-		f.close()
-
-		### Parse file of dictionary ###
-		logEntry = fileName + "="
-		for line in lines:
-			line = line.rstrip("\n")
-			key = line.split(" ")[0]
-			value = line.split(" ")[1]
-
-			logEntry += key + ":" + value + ","		# Format of Log object entry
-
-		logEntry = logEntry[0:len(logEntry) - 1]	# Remove the trailing comma
-
-		return logEntry
 
 
 
