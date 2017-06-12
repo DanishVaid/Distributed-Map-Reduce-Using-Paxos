@@ -120,6 +120,7 @@ class Paxos(object):
 				#accept 	ballotNum[0]	ballotNum[1]	acceptVal
 				outMessage = str(self.logIndex) + " accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal)
 				sock.sendall((outMessage + "%").encode())
+				self.isFirstAccept = False
 
 		print("---END ACCEPT---")
 
