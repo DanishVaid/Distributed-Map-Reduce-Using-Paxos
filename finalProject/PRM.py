@@ -51,7 +51,7 @@ class PRM(object):
 			outMsg = "x ping " + str(self.siteID) + "%"
 			sock.sendall(outMsg.encode())
 		
-		sleep(5)
+		sleep(7)
 
 		highestPRM = None
 		highestLogSize = self.log.getSize()
@@ -67,6 +67,8 @@ class PRM(object):
 						data = data[:-1]
 					
 					data = data.split("%")
+
+					print("--IN RESUME: Data is", data)
 
 					for command in data:
 						command = command.split()
@@ -87,11 +89,12 @@ class PRM(object):
 
 		outMsg = "x GiveLog " + str(self.siteID)
 		self.socketsToPaxos[highestPRM].sendall(outMsg.encode())
-		sleep(4)
+		sleep(7)
 
 		# Get the Log
 		self.updateLog(highestPRM)
 
+		print("--IN RESUME: processing other messages:", incomingMsg)
 		for i in incomingMsg:
 			if i == "close":
 				self.closeConnections()
@@ -255,6 +258,7 @@ class PRM(object):
 			try:
 				data = stream.recv(1024).decode()
 
+				print("-- UPDATE LOG: Recv Data", data)
 				if len(data) > 0:
 					if data[-1] == "%":
 						data = data[:-1]
