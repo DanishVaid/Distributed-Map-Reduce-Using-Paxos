@@ -44,24 +44,78 @@ class PRM(object):
 		print("Resume Called")
 		self.isActive = True
 
+		for sock in self.socketsToPaxos:
+			if sock == None:
+				continue
+			
+			outMsg = "x ping " + str(self.siteID) + "%"
+			sock.sendall(outMsg.encode())
+		
+		sleep(3)
+
+		highestPRM = None
+		highestLogSize = self.log.getSize()
+		incomingMsg = []
+		for stream in self.incomeStreams:
+			stream.settimeout(2)
+
+			try:
+				data = stream.recv(1024).decode()
+
+				if len(data) > 0:
+					if data[-1] == "%":
+						data = data[:-1]
+					
+					data = data.split("%")
+
+					for command in data:
+						command = command.split()
+
+						if command[0] == "currSize":
+							if command[1] > highestLogSize:
+								highestLogSize = int(command[1])
+								highestPRM = int(command[2])
+						else:
+							addingMsg = "x " + ' '.join(command)
+							incomingMsg.append(addingMsg)
+				
+			except socket.timeout:
+				print("No Size Recevied from stream")
+				continue
+
+		print("Largest Size for Updating Log (Resume): size, prm", highestLogSize, highestPRM)
+
+		outMsg = "x GiveLog " + str(self.siteID)
+		self.socketsToPaxos[highestPRM].sendall(outMsg.encode())
+		sleep(2)
+
+		# Get the Log
+		self.updateLog(highestPRM)
+
+		for i in incomingMsg:
+			if i == "close":
+				self.closeConnections()
+				exit()
+
+			self.processMessage(i)
 
 	def processMessage(self, inMessage):
 		inMessage = inMessage.split(" ")
 
-		try:
-			paxosIndex = int(inMessage[0])		#log.getSize()
-		except:
-			paxosIndex = self.log.getSize()
+
+		if self.isActive:
+			try:
+				paxosIndex = int(inMessage[0])		#log.getSize()
+			except:
+				paxosIndex = self.log.getSize()
+			print("Paxos Index is:", paxosIndex)
+
+			while paxosIndex >= len(self.paxosRounds):
+				newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex)
+				self.paxosRounds.append(newPaxos)	# MAY NEED MORE PARAMETERS
 
 		inMessage = inMessage[1:]
-
-		print("Paxos Index is:", paxosIndex)
-
-
-		while paxosIndex >= len(self.paxosRounds):
-			newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex)
-			self.paxosRounds.append(newPaxos)	# MAY NEED MORE PARAMETERS
-
+		
 		if inMessage[0] == "replicate":
 			if self.isActive:
 				fileName = inMessage[1]
@@ -89,9 +143,14 @@ class PRM(object):
 					self.log.insertAtIndex(paxosIndex, decidedLog)
 
 		elif inMessage[0] == "ping":
-			pass
+			outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
+			self.socketsToPaxos[int(inMessage[1])].sendall(str())
+			# Get from siteID
 			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
 			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
+
+		elif inMessage[0] == "GiveLog":
+			self.sendLog(int(inMessage[1]))
 
 		elif inMessage[0] == "stop":
 			self.sockToClient.sendall(("Paxos got stop%").encode())
@@ -185,10 +244,47 @@ class PRM(object):
 		self.minMajority = floor((len(self.ipAddrs) - 1) / 2) + 1
 
 
+	def updateLog(self, highestPRM):
+		if highestPRM == None:
+			print("Log is already up to date")
+			return
 
+		for stream in self.incomeStreams:
+			stream.settimeout(0.5)
 
+			try:
+				data = stream.recv(1024).decode()
 
+				if len(data) > 0:
+					if data[-1] == "%":
+						data = data[:-1]
+					
+					data = data.split("%")
 
+					for command in data:
+						command = command.split()
+						if command[1] != "LogIs":
+							continue
+						
+						self.log = Log.buildLogFromString(command[2])
+						print("Log Updated")
+						return
+
+			except:
+				continue
+
+		print("Failed to Update Log")
+		# Send error message back to CLI
+
+	
+	def sendLog(self, prmInNeed):
+		try:
+			outMsg = "x LogIs" + self.log.toString()
+			seld.socketsToPaxos[prmInNeed].sendall(outMsg.encode())
+			print("Log Sent")
+
+		except:
+			print("Failed to send log -- ERROR")
 
 
 
