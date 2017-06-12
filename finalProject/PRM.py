@@ -52,7 +52,7 @@ class PRM(object):
 			outMsg = "x ping " + str(self.siteID) + "%"
 			sock.sendall(outMsg.encode())
 		
-		sleep(7)
+		sleep(4)
 
 		highestPRM = None
 		highestLogSize = self.log.getSize()
@@ -93,7 +93,7 @@ class PRM(object):
 		if highestPRM is not None:
 			outMsg = "x GiveLog " + str(self.siteID)
 			self.socketsToPaxos[highestPRM].sendall(outMsg.encode())
-		sleep(7)
+		sleep(4)
 
 		# Get the Log
 		self.updateLog(highestPRM)
