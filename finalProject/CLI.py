@@ -5,6 +5,7 @@ import Query
 import Connection
 import socket
 from time import sleep
+import threading
 
 class CLI(object):
 	
@@ -46,9 +47,6 @@ class CLI(object):
 		print("")
 
 		while True:
-			# REPLACE WITH THREADING
-			self.receiveMessages()		# Check and receive messages
-
 			consoleInput = input("Command (enter 'exit' to quit):")
 			consoleInput = consoleInput.split()
 
@@ -163,10 +161,10 @@ class CLI(object):
 		Connection.closeSocket(self.sockToReducer)
 
 
-	def receiveMessages(self):
-		numStream = 0
-
-		for stream in self.incomingStream:
+def receiveMessages(cliUnit):
+	while True:
+		for i in range(len(cliUnit.incomingStream)):
+			stream = cliUnit.incomingStream[i]
 			stream.settimeout(1)
 
 			try:
@@ -177,11 +175,10 @@ class CLI(object):
 						data = data[:-1]
 
 					data = data.split("%")
-					print(data)
+					print("Stream", i, "Message Recevied:", data)
 
 			except socket.timeout:
-				print("No message received for stream", numStream)
-				numStream += 1
+				continue
 
 
 
@@ -227,7 +224,17 @@ def main():
 	client.config()
 
 	client.makeConnections()
+
+	# Listening Thread
+	listen_thread = threading.Thread(target=receiveMessages, args=(client,))
+	listen_thread.daemon = True
+	listen_thread.start()
+
 	client.takeCommand()
+
+	# Join Thread
+	listen_thread.join()
+
 	client.closeConnections()
 
 if __name__ == "__main__":
