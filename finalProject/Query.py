@@ -1,7 +1,7 @@
 
 
 def total(positions):
-	f = open("tempLogFile.txt", 'r')
+	f = open("log.txt", 'r')
 	lines = f.readlines()
 	f.close()
 
@@ -38,7 +38,7 @@ def total(positions):
 
 
 def printFileNames():
-	f = open("tempLogFile.txt", 'r')
+	f = open("log.txt", 'r')
 	lines = f.readlines()
 	f.close()
 
@@ -47,7 +47,7 @@ def printFileNames():
 
 
 def merge(pos1, pos2):
-	f = open("tempLogFile.txt", 'r')
+	f = open("log.txt", 'r')
 	lines = f.readlines()
 	f.close()
 

@@ -149,7 +149,7 @@ def buildLogFromString(inputString):
 # 	tempObj = buildLogFromString(tempString)
 # 	print(tempObj.toString())
 
-# 	with open("tempLogFile.txt", "r") as f:
+# 	with open("log.txt", "r") as f:
 # 		lines = f.readlines()
 # 		print("Number of lines in temp file:", len(lines))
 
