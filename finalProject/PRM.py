@@ -72,7 +72,7 @@ class PRM(object):
 					print("--IN RESUME: Data is", data)
 
 					for command in data:
-						command = command.split()
+						command = command.split(" ")
 
 						if command[0] == "currSize":
 							if int(command[1]) > highestLogSize:
@@ -271,7 +271,7 @@ class PRM(object):
 					data = data.split("%")
 
 					for command in data:
-						command = command.split()
+						command = command.split(" ")
 						if command[1] == "LogIs":
 							print("Log String is:", command[2])
 							self.log = Log.buildLogFromString(command[2])
