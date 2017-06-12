@@ -97,7 +97,6 @@ class CLI(object):
 			### Stops the Paxos, imitates an offline node. ###
 			elif command == "stop":			#part1
 				print("Sending Stop")
-				print(self.sockToPaxos)
 				self.sockToPaxos.sendall(("x stop%").encode())
 
 			### Resumes the Paxos, imitates a node coming online. ###
