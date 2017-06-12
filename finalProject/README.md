@@ -16,3 +16,14 @@ Final Project for 171
         Client - python3 CLI.py [site_ID] client_config.txt
 
         *Each run as their own process
+
+
+[ === Milestone 2 === ]
+    We implemeted all that the lab asked for and that we believe will be tested.
+
+    To run we wrote scripts, run the scripts as such (each in its own terminal):
+        Paxos - ./prm_runner [site_ID]
+        Client - ./client_runner
+
+    The client_runner script takes the responsiblity of creating the Mapper
+    and Reducer processes and running them in the back ground.
