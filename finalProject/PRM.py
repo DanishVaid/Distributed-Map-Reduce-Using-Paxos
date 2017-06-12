@@ -19,7 +19,7 @@ class PRM(object):
 		self.siteID = siteID				# Index of IP/port pair in config file
 		self.configFile = configFile		# File name to read in configurations
 
-		self.paxosRounds = []				# List of Paxos for multi-Paxos algorithm
+		self.paxosRounds = [None]			# List of Paxos for multi-Paxos algorithm
 		self.msgQueue = queue.Queue()
 		self.log = Log.Log()				# Log object
 
@@ -55,8 +55,10 @@ class PRM(object):
 
 		inMessage = inMessage[1:]
 
+		print("Paxos Index is:", paxosIndex)
 
-		while paxosIndex > len(self.paxosRounds):
+
+		while paxosIndex >= len(self.paxosRounds):
 			newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex)
 			self.paxosRounds.append(newPaxos)	# MAY NEED MORE PARAMETERS
 
