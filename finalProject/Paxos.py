@@ -64,10 +64,16 @@ class Paxos(object):
 		print("---START ACKNOWLEDGE---")
 
 		# If incomingBallotNum does not meet condition, do nothing
-		if incomingBallotNum[0] <= self.ballotNum[0]:
-			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
-				print("Prepare rejected.")
-				return
+		if incomingBallotNum[0] < self.ballotNum[0]:
+			print("Prepare rejected, ballot num:", incomingBallotNum)
+			self.socketsToPaxos[incomingBallotNum[1]].sendall(("x PrepareRejected " + str(self.logIndex) + " " + str(incomingBallotNum[0]) + "-" + str(incomingBallotNum[1]) + "%").encode())
+			return
+			
+		if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
+			print("Prepare rejected, ballot num:", incomingBallotNum)
+			self.socketsToPaxos[incomingBallotNum[1]].sendall(("x PrepareRejected " + str(self.logIndex) + " " + str(incomingBallotNum[0]) + "-" + str(incomingBallotNum[1]) + "%").encode())
+			return
+
 
 		self.ballotNum = (incomingBallotNum[0], incomingBallotNum[1])
 
@@ -112,7 +118,7 @@ class Paxos(object):
 				print("Should not go here, chose someone else's value")
 				highestAcceptNumIndex = self.incomingAcceptNums.index(max(self.incomingAcceptNums))
 				self.acceptVal = self.ackAcceptVals[highestAcceptNumIndex]
-				self.sockToCLI.sendall(("Prepare Rejected, Please try again").encode())
+				self.sockToCLI.sendall(("Proposal Rejected, Please try again%").encode())
 
 			for sock in self.socketsToPaxos:
 				if sock == None:
@@ -131,10 +137,13 @@ class Paxos(object):
 		print("---START ACCEPTED---")
 
 		### If incomingBallotNum does not meet condition, do nothing. ###
-		if incomingBallotNum[0] <= self.ballotNum[0]:
-			if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
-				print("Accept rejected.")
-				return
+		if incomingBallotNum[0] < self.ballotNum[0]:
+			return
+
+		if incomingBallotNum[0] == self.ballotNum[0] and incomingBallotNum[1] < self.ballotNum[1]:
+			print("Accept rejected.")
+			return
+		
 
 		self.acceptNum = incomingBallotNum
 		self.acceptVal = incomingAcceptVal
@@ -162,6 +171,9 @@ class Paxos(object):
 		print("---END ACCEPTED---")
 		return None
 
+	def prepareRejected(self, inMsg):
+		print("Prepare rejected, sending message to CLI")
+		self.sockToCLI.sendall("Prepare Rejected, please try again%")
 
 	def buildLogEntryFromFile(self, fileName):
 		f = open(fileName, 'r')

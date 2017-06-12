@@ -34,7 +34,7 @@ class Mapper(object):
 			totalString = totalString[offset:(offset + size + 1)]			# Choose segment of the file
 			# print("Broken total string:", totalString)
 
-			punctuations = [".", ",", "?", "!", "\'", "\"", ":", ";", "-", "/"]
+			punctuations = [".", ",", "?", "!", "\'", "\"", ":", ";", "-", "/", "\""]
 
 			words = totalString.split()
 			for word in words:

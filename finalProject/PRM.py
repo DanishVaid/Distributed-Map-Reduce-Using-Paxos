@@ -153,6 +153,9 @@ class PRM(object):
 					self.isProposing = False
 					self.log.insertAtIndex(paxosIndex, decidedLog)
 
+		elif inMessage[0] == "PrepareRejected":
+			self.paxosRounds[int(inMessage[1])].prepareRejected(inMessage[2])
+
 		elif inMessage[0] == "ping":
 			if self.isActive:
 				outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
