@@ -61,7 +61,7 @@ class PRM(object):
 			stream.settimeout(2)
 
 			try:
-				data = stream.recv(1024).decode()
+				data = self.receiveFromSocket(stream)	#stream.recv(1024).decode()
 
 				if len(data) > 0:
 					if data[-1] == "%":
@@ -192,7 +192,7 @@ class PRM(object):
 				stream.settimeout(1)
 
 				try:
-					data = stream.recv(1024).decode()
+					data = self.receiveFromSocket(stream) #stream.recv(1024).decode()
 
 					if len(data) > 0:
 						if data[-1] == "%":
@@ -261,7 +261,7 @@ class PRM(object):
 			stream.settimeout(1)
 
 			try:
-				data = stream.recv(1024).decode()
+				data = self.receiveFromSocket(stream)	#stream.recv(1024).decode()
 
 				print("-- UPDATE LOG: Recv Data", data)
 				if len(data) > 0:
@@ -295,6 +295,19 @@ class PRM(object):
 
 		except:
 			print("Failed to send log -- ERROR")
+
+	
+	def receiveFromSocket(self, stream):
+		BUFF_SIZE = 4096		#4KB at a time
+		data = ""
+		while True:
+			time.sleep(0.25)
+			thisPart = stream.recv(BUFF_SIZE).decode()
+			data += thisPart
+			
+			if len(thisPart) < BUFF_SIZE:
+				break
+		return data
 
 
 
