@@ -11,8 +11,10 @@ import Log				# Our Log Class
 
 class Paxos(object):
 	
-	def __init__(self, selfID):
+	def __init__(self, selfID, socketsToPaxos, minMajority, logIndex):
 		self.selfID = selfID 				# Index of IP/port pair in config file
+		self.minMajority = minMajority
+		self.logIndex = logIndex
 
 		self.myProposal = None
 		self.ballotNum = (0, 0)				# Tuples storing ballotNum : siteselfID, index of the log to insert into
@@ -32,6 +34,8 @@ class Paxos(object):
 		self.hasLogged = False
 		self.logIndex = 0
 
+		self.socketsToPaxos = socketsToPaxos
+
 
 	def prepare(self, fileName):
 		print("---START PREPARE---")
@@ -44,7 +48,7 @@ class Paxos(object):
 			return
 
 		self.ballotNum = (self.ballotNum[0] + 1, self.selfID)
-		outMessage = "prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
+		outMessage = str(self.logIndex) + " prepare " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1])
 
 		for sock in self.socketsToPaxos:
 			if sock == None:
@@ -69,7 +73,7 @@ class Paxos(object):
 
 		# 0		1					2					3				4				5	
 		# ack	incBallotNum[0]		incBallotNum[1]		acceptNum[0]	acceptNum[1]	acceptVal
-		outMessage = "ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
+		outMessage = str(self.logIndex) + " ack " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
 		print("Send ack back to siteID (" + str(incomingBallotNum[1]) + ") from own siteID: " + str(self.selfID))
 		self.socketsToPaxos[incomingBallotNum[1]].sendall((outMessage + "%").encode())
 
@@ -115,7 +119,7 @@ class Paxos(object):
 
 				#0			1 				2				3
 				#accept 	ballotNum[0]	ballotNum[1]	acceptVal
-				outMessage = ("accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal))
+				outMessage = str(self.logIndex) + " accept " + str(self.ballotNum[0]) + " " + str(self.ballotNum[1]) + " " + str(self.acceptVal)
 				sock.sendall((outMessage + "%").encode())
 
 		print("---END ACCEPT---")
@@ -143,18 +147,20 @@ class Paxos(object):
 
 				# 0			1				2				3
 				# accept	acceptNum[0]	acceptNum[1]	acceptVal
-				msg = "accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
+				msg = str(self.logIndex) + " accept " + str(self.acceptNum[0]) + " " + str(self.acceptNum[1]) + " " + str(self.acceptVal)
 				sock.sendall((msg + "%").encode())
 		
 		self.numAcceptsReceived += 1
 		if self.numAcceptsReceived >= self.minMajority and not self.hasLogged:
 			self.hasLogged = True
-			self.logIndex = self.log.getSize()
-			self.log.insertAtIndex(self.logIndex, self.acceptVal)
+			# self.logIndex = self.log.getSize()
+			# self.log.insertAtIndex(self.logIndex, self.acceptVal)
+			return self.acceptVal
 
 			print("Accepted", self.acceptVal)
 
 		print("---END ACCEPTED---")
+		return None
 
 
 	# def stop(self):
@@ -306,7 +312,7 @@ class Paxos(object):
 		logEntry = logEntry[0:len(logEntry) - 1]	#Remove the trailing comma
 
 		return logEntry
-	
+
 
 # def main():
 

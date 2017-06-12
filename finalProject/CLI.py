@@ -90,18 +90,18 @@ class CLI(object):
 
 			### Initiate Paxos to replicate a log ###
 			elif command == "replicate":	#part1
-				self.sockToPaxos.sendall(("replicate " + str(args[0]) + "%" ).encode())
+				self.sockToPaxos.sendall(("x replicate " + str(args[0]) + "%" ).encode())
 
 			### Stops the Paxos, imitates an offline node. ###
 			elif command == "stop":			#part1
 				print("Sending Stop")
 				print(self.sockToPaxos)
-				self.sockToPaxos.sendall(("stop%").encode())
+				self.sockToPaxos.sendall(("x stop%").encode())
 
 			### Resumes the Paxos, imitates a node coming online. ###
 			elif command == "resume":		#part1
 				print("Sending Resume")
-				self.sockToPaxos.sendall(("resume%").encode())
+				self.sockToPaxos.sendall(("x resume%").encode())
 
 			### Look for received messages ###
 			elif command == "status":
@@ -114,15 +114,15 @@ class CLI(object):
 				for i in args:
 					indexes += (" " + str(i))
 				
-				self.sockToPaxos.sendall(("total" + indexes + "%").encode())
+				self.sockToPaxos.sendall(("x total" + indexes + "%").encode())
 
 			### Prints all file names ###
 			elif command == "print":		#part1
-				self.sockToPaxos.sendall(("print%").encode())
+				self.sockToPaxos.sendall(("x print%").encode())
 
 			### Merges two log entries and prints ###
 			elif command == "merge":		#part1
-				self.sockToPaxos.sendall(("merge " + str(args[0]) + " " + str(args[1]) + "%").encode())
+				self.sockToPaxos.sendall(("x merge " + str(args[0]) + " " + str(args[1]) + "%").encode())
 
 			else:
 				print("Not a recognizable command")

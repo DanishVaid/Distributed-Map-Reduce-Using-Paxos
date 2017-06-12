@@ -3,6 +3,7 @@
 import Paxos
 import Query
 import Log
+import Connection
 
 import sys
 import queue
@@ -46,33 +47,44 @@ class PRM(object):
 
 	def processMessage(self, inMessage):
 		inMessage = inMessage.split(" ")
-		paxosIndex = log.getSize()
 
-		while paxosIndex > len(paxosRounds):
-			paxosRounds.append(PRM(self.siteID))	# MAY NEED MORE PARAMETERS
+		try:
+			paxosIndex = int(inMessage[0])		#log.getSize()
+		except:
+			paxosIndex = self.log.getSize()
+
+		inMessage = inMessage[1:]
+
+
+		while paxosIndex > len(self.paxosRounds):
+			newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex)
+			self.paxosRounds.append(newPaxos)	# MAY NEED MORE PARAMETERS
 
 		if inMessage[0] == "replicate":
 			if self.isActive:
 				fileName = inMessage[1]
-				paxosRounds[paxosIndex].prepare(fileName)
+				self.paxosRounds[paxosIndex].prepare(fileName)
 
 		elif inMessage[0] == "prepare":
 			if self.isActive:
 				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
-				paxosRounds[paxosIndex].acknowledge(incomingBallotNum)
+				self.paxosRounds[paxosIndex].acknowledge(incomingBallotNum)
 
 		elif inMessage[0] == "ack":
 			if self.isActive:
 				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
 				incomingAcceptNum = (int(inMessage[3]), int(inMessage[4]))
 				incomingAcceptVal = inMessage[5]
-				paxosRounds[paxosIndex].accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
+				self.paxosRounds[paxosIndex].accept(incomingBallotNum, incomingAcceptNum, incomingAcceptVal)
 		
 		elif inMessage[0] == "accept":
 			if self.isActive:
 				incomingBallotNum = (int(inMessage[1]), int(inMessage[2]))
 				incomingAcceptVal = inMessage[3]
-				paxosRounds[paxosIndex].accepted(incomingBallotNum, incomingAcceptVal)
+				decidedLog = self.paxosRounds[paxosIndex].accepted(incomingBallotNum, incomingAcceptVal)
+
+				if decidedLog is not None:
+					self.log.insertAtIndex(paxosIndex, decidedLog)
 
 		elif inMessage[0] == "ping":
 			pass
@@ -128,10 +140,10 @@ class PRM(object):
 
 				except socket.timeout:
 					continue
-	
+
 
 	def makeConnections(self):
-		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.selfID)], self.ports[int(self.selfID)])
+		self.mySock = Connection.createAcceptSocket(self.ipAddrs[int(self.siteID)], self.ports[int(self.siteID)])
 		sockFromCLI = Connection.createAcceptSocket("127.0.0.1", 5005)
 
 		sleep(5)
