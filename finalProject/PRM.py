@@ -44,8 +44,9 @@ class PRM(object):
 		print("Resume Called")
 		self.isActive = True
 
-		for sock in self.socketsToPaxos:
-			if sock == None:
+		for i in range(len(self.socketsToPaxos)):
+			sock = self.socketsToPaxos[i]
+			if sock == None or i == self.siteID:
 				continue
 			
 			outMsg = "x ping " + str(self.siteID) + "%"
@@ -78,7 +79,7 @@ class PRM(object):
 								highestLogSize = int(command[1])
 								highestPRM = int(command[2])
 						else:
-							addingMsg = "x " + ' '.join(command)
+							addingMsg = ' '.join(command)
 							incomingMsg.append(addingMsg)
 				
 			except socket.timeout:
@@ -274,7 +275,7 @@ class PRM(object):
 						print("Log Updated")
 						return
 
-			except:
+			except socket.timeout:
 				continue
 
 		print("Failed to Update Log")
@@ -283,7 +284,7 @@ class PRM(object):
 	
 	def sendLog(self, prmInNeed):
 		try:
-			outMsg = "x LogIs" + self.log.toString()
+			outMsg = "x LogIs " + self.log.toString()
 			self.socketsToPaxos[prmInNeed].sendall(outMsg.encode())
 			print("Log Sent")
 
