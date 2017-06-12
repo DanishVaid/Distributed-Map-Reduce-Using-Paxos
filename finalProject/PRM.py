@@ -75,6 +75,7 @@ class PRM(object):
 				paxosRounds[paxosIndex].accepted(incomingBallotNum, incomingAcceptVal)
 
 		elif inMessage[0] == "ping":
+			pass
 			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
 			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
 
