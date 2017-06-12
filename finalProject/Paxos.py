@@ -32,7 +32,6 @@ class Paxos(object):
 		self.isFirstAccept = True			# Nodes should not send more accept messages after the first received accept of a unique value
 
 		self.hasLogged = False
-		self.logIndex = 0
 
 		self.socketsToPaxos = socketsToPaxos
 
