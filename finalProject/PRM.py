@@ -78,7 +78,7 @@ class PRM(object):
 							if int(command[1]) > highestLogSize:
 								highestLogSize = int(command[1])
 								highestPRM = int(command[2])
-								print("PRM Set")
+								print("PRM Chose at:", highestPRM)
 						else:
 							addingMsg = ' '.join(command)
 							incomingMsg.append(addingMsg)
@@ -273,6 +273,7 @@ class PRM(object):
 					for command in data:
 						command = command.split()
 						if command[1] == "LogIs":
+							print("Log String is:", command[2])
 							self.log = Log.buildLogFromString(command[2])
 							print("Log Updated")
 							print(self.log.toString())
