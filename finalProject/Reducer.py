@@ -19,7 +19,8 @@ class Reducer():
 				f = open(fileName, 'r')
 
 			except FileNotFoundError:
-				print("--- File", fileName, "Not Found --- ")
+				self.socketToCLI(("--- File " + fileName + " Not Found ---").encode())
+				# print("--- File", fileName, "Not Found --- ")
 				return
 
 			for line in f:
@@ -79,7 +80,7 @@ class Reducer():
 						data = data[:-1]
 
 					data = data.split("%")
-					print(data)
+					# print(data)
 
 					for message in data:
 						if message == "close":

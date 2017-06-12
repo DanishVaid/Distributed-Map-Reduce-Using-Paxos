@@ -17,7 +17,7 @@ class Mapper(object):
 
 
 	def map(self, fileName, offset, size):
-		print("filename offset size", fileName, offset, size)	# Print input
+		# print("filename offset size", fileName, offset, size)	# Print input
 
 		currLookedAt = 0	# NOT USED
 		### Read contents from input file ###
@@ -28,11 +28,11 @@ class Mapper(object):
 			for line in lines:
 				totalString = totalString + line + " "
 
-			# DO WE WANT THESE PRINT STATEMENTS?
-			print("Intial total string:", totalString)
-			print("Size is:", size)
+			# DO WE WANT THESE PRINT STATEMENTS? - No
+			# print("Intial total string:", totalString)
+			# print("Size is:", size)
 			totalString = totalString[offset:(offset + size + 1)]			# Choose segment of the file
-			print("Broken total string:", totalString)
+			# print("Broken total string:", totalString)
 
 			punctuations = [".", ",", "?", "!", "\'", "\"", ":", ";", "-", "/"]
 
@@ -41,10 +41,10 @@ class Mapper(object):
 				for punc in punctuations:
 					word = word.replace(punc, '')
 				word = word.lower()
-				
+
 				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1 	# Build word counts into dictionary
 
-			print("Dictionary:", self.wordCounts)
+			# print("Dictionary:", self.wordCounts)
 
 		### Build name of output file ###
 		try:
@@ -55,7 +55,7 @@ class Mapper(object):
 
 		### Print out to an output file ###
 		self.writeToFile(outputFileName)
-		print("Finished Writing to file:", outputFileName)
+		self.socketToCLI.sendall(("Finished Writing to file:" + outputFileName).encode())
 
 
 	def writeToFile(self, outputFileName):
@@ -93,7 +93,7 @@ class Mapper(object):
 						data = data[:-1]
 
 					data = data.split("%")
-					print(data)
+					# print(data)
 
 					for message in data:
 						if message == "close":

@@ -181,10 +181,10 @@ def receiveMessages(cliUnit):
 
 					data = data.split("%")
 					print("Stream", i, "Message Recevied:", data)
-					print("Command (enter 'exit' to quit):")
-
 			except socket.timeout:
 				continue
+			
+		print("Command (enter 'exit' to quit):")
 
 
 
