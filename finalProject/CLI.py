@@ -7,6 +7,8 @@ import socket
 from time import sleep
 import threading
 
+thread_stop = False
+
 class CLI(object):
 	
 	def __init__(self, configFile):
@@ -26,6 +28,7 @@ class CLI(object):
 
 
 	def takeCommand(self):
+		global thread_stop
 		sleep(2)						# For initial start up messages from other processes
 		print("")
 
@@ -59,6 +62,7 @@ class CLI(object):
 				self.sockToMapper2.sendall(("close%").encode())
 				self.sockToReducer.sendall(("close%").encode())
 				self.sockToPaxos.sendall(("close%").encode())
+				thread_stop = True
 				break
 
 			### Initiate map command to both Mapper processes ###
@@ -162,7 +166,8 @@ class CLI(object):
 
 
 def receiveMessages(cliUnit):
-	while True:
+	glocal thread_stop
+	while not thread_stop:
 		for i in range(len(cliUnit.incomingStream)):
 			stream = cliUnit.incomingStream[i]
 			stream.settimeout(1)
