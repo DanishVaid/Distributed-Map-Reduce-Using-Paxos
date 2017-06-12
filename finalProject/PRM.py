@@ -118,7 +118,7 @@ class PRM(object):
 			print("Paxos Index is:", paxosIndex)
 
 			while paxosIndex >= len(self.paxosRounds):
-				newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex, self.sockToCLI)
+				newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex, self.sockToClient)
 				self.paxosRounds.append(newPaxos)	# MAY NEED MORE PARAMETERS
 
 		inMessage = inMessage[1:]

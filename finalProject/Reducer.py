@@ -41,6 +41,7 @@ class Reducer():
 
 		### Print out to the output file ###
 		self.writeToFile(outputFileName)
+		self.socketToCLI.sendall(("Finished Reducing File - wrote out to: " + outputFileName).encode())
 		
 
 	def writeToFile(self, outputFileName):
