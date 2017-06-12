@@ -34,8 +34,14 @@ class Mapper(object):
 			totalString = totalString[offset:(offset + size + 1)]			# Choose segment of the file
 			print("Broken total string:", totalString)
 
+			punctuations = [".", ",", "?", "!", "\'", "\"", ":", ";", "-", "/"]
+
 			words = totalString.split()
 			for word in words:
+				for punc in punctuations:
+					word = word.replace(punc, '')
+				word = word.lower()
+				
 				self.wordCounts[word] = self.wordCounts.get(word, 0) + 1 	# Build word counts into dictionary
 
 			print("Dictionary:", self.wordCounts)
