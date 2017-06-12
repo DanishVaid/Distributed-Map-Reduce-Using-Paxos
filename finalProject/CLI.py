@@ -166,7 +166,7 @@ class CLI(object):
 
 
 def receiveMessages(cliUnit):
-	glocal thread_stop
+	global thread_stop
 	while not thread_stop:
 		for i in range(len(cliUnit.incomingStream)):
 			stream = cliUnit.incomingStream[i]
