@@ -117,7 +117,7 @@ class PRM(object):
 				paxosIndex = int(inMessage[0])		#log.getSize()
 			except:
 				paxosIndex = self.log.getSize()
-			print("Paxos Index is:", paxosIndex)
+			print("Paxos Index Working At:", paxosIndex)
 
 			while paxosIndex >= len(self.paxosRounds):
 				newPaxos = Paxos.Paxos(self.siteID, self.socketsToPaxos, self.minMajority, paxosIndex, self.sockToClient)
