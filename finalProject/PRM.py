@@ -154,9 +154,10 @@ class PRM(object):
 					self.log.insertAtIndex(paxosIndex, decidedLog)
 
 		elif inMessage[0] == "ping":
-			outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
-			self.socketsToPaxos[int(inMessage[1])].sendall(outMsg.encode())
-			print("Ping response sent")
+			if self.isActive:
+				outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
+				self.socketsToPaxos[int(inMessage[1])].sendall(outMsg.encode())
+				print("Ping response sent")
 			# Get from siteID
 			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
 			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
