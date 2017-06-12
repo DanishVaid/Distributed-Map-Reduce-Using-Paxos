@@ -173,7 +173,7 @@ class Paxos(object):
 
 	def prepareRejected(self, inMsg):
 		print("Prepare rejected, sending message to CLI")
-		self.sockToCLI.sendall("Prepare Rejected, please try again%")
+		self.sockToCLI.sendall(("Prepare Rejected, please try again%").encode())
 
 	def buildLogEntryFromFile(self, fileName):
 		f = open(fileName, 'r')
