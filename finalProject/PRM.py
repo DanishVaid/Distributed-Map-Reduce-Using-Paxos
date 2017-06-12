@@ -72,7 +72,7 @@ class PRM(object):
 						command = command.split()
 
 						if command[0] == "currSize":
-							if command[1] > highestLogSize:
+							if int(command[1]) > highestLogSize:
 								highestLogSize = int(command[1])
 								highestPRM = int(command[2])
 						else:
