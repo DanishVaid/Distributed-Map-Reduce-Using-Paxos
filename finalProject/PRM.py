@@ -144,7 +144,7 @@ class PRM(object):
 
 		elif inMessage[0] == "ping":
 			outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
-			self.socketsToPaxos[int(inMessage[1])].sendall(str())
+			self.socketsToPaxos[int(inMessage[1])].sendall(outMsg.encode())
 			# Get from siteID
 			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
 			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
