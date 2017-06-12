@@ -78,6 +78,7 @@ class PRM(object):
 							if int(command[1]) > highestLogSize:
 								highestLogSize = int(command[1])
 								highestPRM = int(command[2])
+								print("PRM Set")
 						else:
 							addingMsg = ' '.join(command)
 							incomingMsg.append(addingMsg)
@@ -88,8 +89,10 @@ class PRM(object):
 
 		print("Largest Size for Updating Log (Resume): size, prm", highestLogSize, highestPRM)
 
-		outMsg = "x GiveLog " + str(self.siteID)
-		self.socketsToPaxos[highestPRM].sendall(outMsg.encode())
+
+		if highestPRM is not None:
+			outMsg = "x GiveLog " + str(self.siteID)
+			self.socketsToPaxos[highestPRM].sendall(outMsg.encode())
 		sleep(7)
 
 		# Get the Log
@@ -149,6 +152,7 @@ class PRM(object):
 		elif inMessage[0] == "ping":
 			outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
 			self.socketsToPaxos[int(inMessage[1])].sendall(outMsg.encode())
+			print("Ping message sent")
 			# Get from siteID
 			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
 			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
@@ -268,12 +272,11 @@ class PRM(object):
 
 					for command in data:
 						command = command.split()
-						if command[1] != "LogIs":
-							continue
-						
-						self.log = Log.buildLogFromString(command[2])
-						print("Log Updated")
-						return
+						if command[1] == "LogIs":
+							self.log = Log.buildLogFromString(command[2])
+							print("Log Updated")
+							print(self.log.toString())
+							return
 
 			except socket.timeout:
 				continue
@@ -283,6 +286,7 @@ class PRM(object):
 
 	
 	def sendLog(self, prmInNeed):
+		print("Sending Log")
 		try:
 			outMsg = "x LogIs " + self.log.toString()
 			self.socketsToPaxos[prmInNeed].sendall(outMsg.encode())

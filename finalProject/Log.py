@@ -7,6 +7,11 @@ class Log(object):
 
 		self.logFile = "log.txt"
 
+		
+		with open(self.logFile, "w") as f:
+			f.seek(0)
+			f.truncate()
+			f.write(self.toString())
 
 	def append(self, fileName, assocDict):
 		self.fileNames.append(fileName)
@@ -114,8 +119,13 @@ def buildLogFromString(inputString):
 
 			finalObj.append(filename, assocDict)
 
-		return finalObj
+				
+		with open(finalObj.logFile, "w") as f:
+			f.seek(0)
+			f.truncate()
+			f.write(finalObj.toString())
 
+		return finalObj
 
 
 # ## TESTING AREA ###
