@@ -51,7 +51,7 @@ class PRM(object):
 			outMsg = "x ping " + str(self.siteID) + "%"
 			sock.sendall(outMsg.encode())
 		
-		sleep(3)
+		sleep(5)
 
 		highestPRM = None
 		highestLogSize = self.log.getSize()
@@ -87,7 +87,7 @@ class PRM(object):
 
 		outMsg = "x GiveLog " + str(self.siteID)
 		self.socketsToPaxos[highestPRM].sendall(outMsg.encode())
-		sleep(2)
+		sleep(4)
 
 		# Get the Log
 		self.updateLog(highestPRM)
@@ -250,7 +250,7 @@ class PRM(object):
 			return
 
 		for stream in self.incomeStreams:
-			stream.settimeout(0.5)
+			stream.settimeout(1)
 
 			try:
 				data = stream.recv(1024).decode()
