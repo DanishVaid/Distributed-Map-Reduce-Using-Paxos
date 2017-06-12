@@ -280,7 +280,7 @@ class PRM(object):
 	def sendLog(self, prmInNeed):
 		try:
 			outMsg = "x LogIs" + self.log.toString()
-			seld.socketsToPaxos[prmInNeed].sendall(outMsg.encode())
+			self.socketsToPaxos[prmInNeed].sendall(outMsg.encode())
 			print("Log Sent")
 
 		except:
