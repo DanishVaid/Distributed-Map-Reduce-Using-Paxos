@@ -34,6 +34,8 @@ class PRM(object):
 		self.socketsToPaxos = [None]		# Make the first element None. List of sockets of all other Paxos nodes
 		self.sockToClient = None
 
+		self.isProposing = False
+
 
 	def stop(self):
 		print("Stop Called")	
@@ -126,6 +128,7 @@ class PRM(object):
 		if inMessage[0] == "replicate":
 			if self.isActive:
 				fileName = inMessage[1]
+				self.isProposing = True
 				self.paxosRounds[paxosIndex].prepare(fileName)
 
 		elif inMessage[0] == "prepare":
@@ -147,12 +150,13 @@ class PRM(object):
 				decidedLog = self.paxosRounds[paxosIndex].accepted(incomingBallotNum, incomingAcceptVal)
 
 				if decidedLog is not None:
+					self.isProposing = False
 					self.log.insertAtIndex(paxosIndex, decidedLog)
 
 		elif inMessage[0] == "ping":
 			outMsg = "currSize " + str(self.log.getSize()) + " " + str(self.siteID) + "%"
 			self.socketsToPaxos[int(inMessage[1])].sendall(outMsg.encode())
-			print("Ping message sent")
+			print("Ping response sent")
 			# Get from siteID
 			# PING IS SENT WHEN SOURCE NEEDS TO UPDATE THEIR LOG
 			# SEND OVER RELEVANT (GREATER THAN THEIR INDEX) LOG ENTRIES
@@ -186,10 +190,16 @@ class PRM(object):
 
 	def receiveMessages(self):
 		# NEED TO COMPENSATE FOR WHEN MESSAGES ARE BIGGER THAN 1024
+		numOfRounds = 0
 
 		while True:
 			for stream in self.incomeStreams:
 				stream.settimeout(1)
+
+				if self.isProposing and numOfRounds > 3:
+					self.sockToClient.sendall(("Previous Replicate Failed - Try Again%").encode())
+					self.isProposing = False
+					numOfRounds = 0
 
 				try:
 					data = self.receiveFromSocket(stream) #stream.recv(1024).decode()
@@ -204,11 +214,13 @@ class PRM(object):
 						for i in data:
 							if i == "close":
 								return
-
+							numOfRounds = 0
 							self.processMessage(i)
 
 				except socket.timeout:
 					continue
+
+			numOfRounds = numOfRounds + 1
 
 
 	def makeConnections(self):

@@ -127,9 +127,9 @@ class CLI(object):
 				self.sockToPaxos.sendall(("x merge " + str(args[0]) + " " + str(args[1]) + "%").encode())
 
 			else:
-				print("Not a recognizable command")
+				print("Not a recognizable command", flush=True)
 
-		print("Program exitted.")
+		print("Program exitted.", flush=True)
 
 
 	def config(self):
@@ -180,11 +180,10 @@ def receiveMessages(cliUnit):
 						data = data[:-1]
 
 					data = data.split("%")
-					print("Stream", i, "Message Recevied:", data)
+					print("\nStream", i, "Message Recevied:", data, flush=True)
+					print("\nCommand (enter 'exit' to quit):", flush=True)
 			except socket.timeout:
 				continue
-			
-		print("Command (enter 'exit' to quit):")
 
 
 
