@@ -2,10 +2,10 @@
 
 # import socket 			# To create network connection
 # import sys				# For command line arguments
-# import Connection		# Makes the Sockets
-import Log				# Our Log Class
+# import Connection			# Makes the Sockets
+import Log					# Our Log Class
 # import Query
-# import queue			# Queue for messages
+# import queue				# Queue for messages
 # from math import floor	# Helps calculate minMajority
 # from time import sleep	# Allows for creating sockets in the correct order
 

@@ -1,2 +1,0 @@
-file1=hello:2,how:1,are:6,you:3
-file1=hello:2,how:1,are:6,this:1

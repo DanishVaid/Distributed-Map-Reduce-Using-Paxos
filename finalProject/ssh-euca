@@ -1,3 +1,0 @@
-#!/bin/sh
-
-ssh -i CS171Key_Jake_Danish.pem ubuntu@128.111.84.209

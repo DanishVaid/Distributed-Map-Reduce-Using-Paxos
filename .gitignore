@@ -1,1 +1,7 @@
+__pycache__/*
 *.pyc
+
+# Class Specific Files
+*.pem
+*.PNG
+ssh-euca
